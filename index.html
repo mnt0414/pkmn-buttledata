@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ダブルバトル記録</title>
+<style>
+:root {
+  --bg0:#0f1117;--bg1:#1a1d27;--bg2:#22263a;--bg3:#2a2f45;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --text1:#f0f2ff;--text2:#8b93b8;--text3:#4d5470;
+  --acc:#5b7fff;--acc2:#3dd68c;--acc3:#ff5f6d;--acc4:#fbbf24;
+  --win:#22c55e;--loss:#ef4444;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',system-ui,sans-serif;background:var(--bg0);color:var(--text1);display:flex;flex-direction:column;}
+
+/* NAV */
+.nav{display:flex;background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-btn{flex:1;padding:10px 4px 8px;background:none;border:none;color:var(--text2);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s;border-bottom:2px solid transparent;}
+.nav-btn svg{width:18px;height:18px;stroke-width:1.8;}
+.nav-btn.active{color:var(--acc);border-bottom-color:var(--acc);}
+
+/* PAGES */
+.pages{flex:1;overflow:hidden;position:relative;}
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:12px;display:none;}
+.page.active{display:block;}
+.inner{max-width:860px;margin:0 auto;}
+
+/* CARDS */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.card-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;}
+
+/* PARTY TABS */
+.ptabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.ptab{padding:5px 12px;border-radius:16px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ptab.active{background:var(--acc);border-color:var(--acc);color:#fff;}
+
+/* POKE GRID 6 */
+.pg6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+@media(max-width:480px){.pg6{grid-template-columns:repeat(3,1fr);}}
+
+/* POKE SLOT */
+.pslot{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:6px 3px 5px;cursor:pointer;transition:all .15s;min-height:82px;position:relative;gap:1px;}
+.pslot:hover{border-color:var(--acc);background:var(--bg3);}
+.pslot.empty{border-style:dashed;}
+.pslot img{width:52px;height:52px;object-fit:contain;image-rendering:pixelated;}
+.pslot .snum{position:absolute;top:3px;left:5px;font-size:9px;color:var(--text3);font-weight:700;}
+.pslot .sname{font-size:9px;color:var(--text2);text-align:center;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pslot .stypes{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:1px;}
+.pslot .rx{position:absolute;top:2px;right:3px;background:transparent;border:none;color:var(--text3);font-size:13px;cursor:pointer;line-height:1;padding:1px 2px;}
+.pslot .rx:hover{color:var(--loss);}
+.pslot .add-icon{font-size:18px;color:var(--text3);margin:10px 0 4px;}
+
+/* TYPE BADGE */
+.tb{display:inline-block;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;letter-spacing:.03em;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+@media(min-width:520px){.modal-overlay{align-items:center;}}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:460px;max-height:78vh;display:flex;flex-direction:column;padding:16px;}
+@media(min-width:520px){.modal{border-radius:var(--r);max-height:70vh;}}
+.modal h3{font-size:13px;font-weight:600;margin-bottom:10px;}
+.modal input{width:100%;padding:9px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:14px;outline:none;margin-bottom:8px;}
+.modal input:focus{border-color:var(--acc);}
+.modal-list{overflow-y:auto;flex:1;}
+.mitem{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:var(--rs);cursor:pointer;transition:background .1s;}
+.mitem:hover{background:var(--bg3);}
+.mitem img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+.mitem-info .mname{font-size:13px;}
+.mitem-info .mno{font-size:10px;color:var(--text3);}
+.mitem-info .mtypes{display:flex;gap:3px;margin-top:2px;}
+.mclose{width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:var(--rs);cursor:pointer;font-size:13px;margin-top:8px;}
+.mloading{text-align:center;padding:20px;color:var(--text2);font-size:13px;}
+.yakkun-link{font-size:9px;color:var(--acc);text-decoration:none;}
+.yakkun-link:hover{text-decoration:underline;}
+
+/* BTNS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:var(--rs);border:1px solid var(--border2);background:transparent;color:var(--text1);font-size:12px;cursor:pointer;transition:all .15s;}
+.btn:hover{background:var(--bg3);}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;}
+.btn.pri:hover{opacity:.88;}
+.btn.suc{background:rgba(34,197,94,.15);border-color:var(--win);color:var(--win);}
+.btn.dan{background:rgba(239,68,68,.1);border-color:var(--loss);color:var(--loss);}
+.brow{display:flex;gap:7px;flex-wrap:wrap;}
+
+/* STEPS */
+.stepbar{display:flex;gap:3px;margin-bottom:12px;}
+.sdot{flex:1;height:3px;background:var(--bg3);border-radius:2px;transition:background .3s;}
+.sdot.done{background:var(--acc2);}
+.sdot.active{background:var(--acc);}
+.slabel{font-size:11px;color:var(--text2);margin-bottom:12px;}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:440px){.two{grid-template-columns:1fr;}}
+
+/* SEL GRID */
+.selgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.selbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;min-height:72px;}
+.selbtn img{width:42px;height:42px;object-fit:contain;image-rendering:pixelated;}
+.selbtn .sl{font-size:9px;color:var(--text2);text-align:center;line-height:1.2;}
+.selbtn .stypes2{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;}
+.selbtn.lead{border-color:var(--acc);background:rgba(91,127,255,.12);}
+.selbtn.lead .sl{color:var(--acc);font-weight:700;}
+.selbtn.back{border-color:var(--acc2);background:rgba(61,214,140,.1);}
+.selbtn.back .sl{color:var(--acc2);font-weight:700;}
+.selbtn:hover:not(.lead):not(.back){background:var(--bg3);}
+
+/* RESULT */
+.resbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+.resbtn{padding:14px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;font-size:17px;font-weight:700;cursor:pointer;transition:all .15s;}
+.resbtn.wb{color:var(--win);}
+.resbtn.lb{color:var(--loss);}
+.resbtn.wb.on{background:rgba(34,197,94,.18);border-color:var(--win);}
+.resbtn.lb.on{background:rgba(239,68,68,.15);border-color:var(--loss);}
+
+/* CONFIRM */
+.cpoke{display:flex;align-items:center;gap:6px;padding:5px 0;}
+.cpoke img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;}
+.badge-pos{font-size:9px;padding:2px 5px;border-radius:3px;font-weight:700;flex-shrink:0;}
+.bpl{background:rgba(91,127,255,.2);color:var(--acc);}
+.bpb{background:rgba(61,214,140,.15);color:var(--acc2);}
+
+/* STAT HEADER */
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
+.scard{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:12px 8px;text-align:center;}
+.scard .sv{font-size:22px;font-weight:700;color:var(--acc);}
+.scard .sl2{font-size:9px;color:var(--text3);margin-top:2px;}
+.scard .sub{font-size:10px;color:var(--text2);margin-top:2px;}
+
+/* STAT TABS */
+.stabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;}
+.stab{padding:5px 10px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;}
+.stab.active{background:var(--bg2);color:var(--text1);border-color:var(--border2);}
+
+/* PARTY FILTER */
+.pfbar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.pfbtn{padding:4px 9px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:10px;cursor:pointer;}
+.pfbtn.active{background:var(--acc);border-color:var(--acc);color:#fff;}
+
+/* RATE ROW */
+.rrow{display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid var(--border);}
+.rrow:last-child{border-bottom:none;}
+.rrow img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+.rrow .rname{font-size:11px;min-width:70px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rbwrap{flex:1;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.rb{height:100%;border-radius:3px;transition:width .5s;}
+.rval{font-size:10px;color:var(--text2);min-width:34px;text-align:right;}
+
+/* COMBO ROW */
+.crow{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border);}
+.crow:last-child{border-bottom:none;}
+.ppair{display:flex;}
+.ppair img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated;}
+.wbwrap{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 4px;}
+.wb2{height:100%;border-radius:2px;}
+.wval{font-size:10px;min-width:56px;text-align:right;}
+
+/* POKE WINRATE ROW */
+.pwrow{display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--border);}
+.pwrow:last-child{border-bottom:none;}
+.pwrow img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;flex-shrink:0;}
+
+/* HISTORY */
+.hrow{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.hrow:last-child{border-bottom:none;}
+.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;}
+.bw{background:rgba(34,197,94,.15);color:var(--win);}
+.bl{background:rgba(239,68,68,.12);color:var(--loss);}
+
+/* CROSS TABLE */
+.ctable{width:100%;border-collapse:collapse;font-size:10px;}
+.ctable th,.ctable td{padding:5px 6px;border:1px solid var(--border);text-align:center;}
+.ctable th{background:var(--bg2);color:var(--text2);font-weight:500;}
+.ctable td{background:var(--bg1);}
+
+/* SETTINGS */
+.sinput{width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:13px;outline:none;margin-bottom:9px;}
+.sinput:focus{border-color:var(--acc);}
+.slabel{font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em;}
+.nbar{display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:var(--rs);font-size:11px;margin-bottom:12px;}
+.nok{background:rgba(34,197,94,.1);color:var(--win);border:1px solid rgba(34,197,94,.3);}
+.nng{background:rgba(239,68,68,.1);color:var(--loss);border:1px solid rgba(239,68,68,.3);}
+.nidle{background:var(--bg2);color:var(--text2);border:1px solid var(--border);}
+
+/* MISC */
+.empty{text-align:center;padding:28px;color:var(--text3);font-size:12px;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('party',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>パーティ
+  </button>
+  <button class="nav-btn" onclick="showPage('battle',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2L6 14h7l-3 8 10-12h-7l3-8z"/></svg>対戦記録
+  </button>
+  <button class="nav-btn" onclick="showPage('stats',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 20h18M7 16V10M12 16V4M17 16v-6"/></svg>データ
+  </button>
+  <button class="nav-btn" onclick="showPage('settings',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定
+  </button>
+</nav>
+
+<div class="pages">
+
+<!-- PARTY PAGE -->
+<div id="page-party" class="page active">
+<div class="inner">
+  <div class="card">
+    <div class="card-title">パーティ切り替え</div>
+    <div class="ptabs" id="party-tabs"></div>
+    <div class="brow" style="margin-top:8px;">
+      <button class="btn" onclick="addParty()">＋ 新しいパーティ</button>
+      <button class="btn dan" onclick="delParty()">このパーティを削除</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="party-edit-label">パーティを編集</div>
+    <div class="pg6" id="party-slots"></div>
+  </div>
+</div>
+</div>
+
+<!-- BATTLE PAGE -->
+<div id="page-battle" class="page">
+<div class="inner">
+  <div class="card" style="padding:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+      <div style="font-size:10px;color:var(--text3);">使用中のパーティ</div>
+      <button class="btn" style="font-size:10px;padding:3px 8px;" onclick="showPage('party',document.querySelectorAll('.nav-btn')[0])">変更</button>
+    </div>
+    <div class="pg6" id="b-my-party" style="pointer-events:none;opacity:.85;"></div>
+  </div>
+  <div class="card">
+    <div class="stepbar" id="stepbar"><div class="sdot active"></div><div class="sdot"></div><div class="sdot"></div></div>
+    <div class="slabel" id="slabel">ステップ1：相手のパーティを記録</div>
+    <!-- STEP 1 -->
+    <div id="bs1">
+      <div class="card-title">相手のパーティ（スロットをタップして登録）</div>
+      <div class="pg6" id="opp-slots"></div>
+      <div class="brow" style="margin-top:12px;justify-content:flex-end;">
+        <button class="btn pri" onclick="goStep(2)">次へ →</button>
+      </div>
+    </div>
+    <!-- STEP 2 -->
+    <div id="bs2" style="display:none;">
+      <div class="two">
+        <div>
+          <div class="card-title">自分の選出</div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:7px;">青=先発（最初の2匹）/ 緑=後発</div>
+          <div class="selgrid" id="my-selgrid"></div>
+        </div>
+        <div>
+          <div class="card-title">相手の選出</div>
+          <div style="font-size:9px;color:var(--text3);margin-bottom:7px;">青=先発 / 緑=後発</div>
+          <div class="selgrid" id="opp-selgrid"></div>
+        </div>
+      </div>
+      <div class="brow" style="margin-top:12px;justify-content:space-between;">
+        <button class="btn" onclick="goStep(1)">← 戻る</button>
+        <button class="btn pri" onclick="goStep(3)">次へ →</button>
+      </div>
+    </div>
+    <!-- STEP 3 -->
+    <div id="bs3" style="display:none;">
+      <div class="two" style="margin-bottom:12px;">
+        <div><div class="card-title">自分の選出</div><div id="my-confirm"></div></div>
+        <div><div class="card-title">相手の選出</div><div id="opp-confirm"></div></div>
+      </div>
+      <div class="card-title">対戦結果</div>
+      <div class="resbtns">
+        <button class="resbtn wb" id="rb-win" onclick="setResult('win')">勝ち ✓</button>
+        <button class="resbtn lb" id="rb-loss" onclick="setResult('loss')">負け ✗</button>
+      </div>
+      <div class="brow" style="justify-content:space-between;">
+        <button class="btn" onclick="goStep(2)">← 戻る</button>
+        <button class="btn suc" onclick="saveBattle()">保存する</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- STATS PAGE -->
+<div id="page-stats" class="page">
+<div class="inner">
+  <div class="stat3" id="stat-summary"></div>
+  <div class="pfbar" id="pf-bar"></div>
+  <div class="stabs">
+    <button class="stab active" onclick="showStatTab('rate',this)">選出率</button>
+    <button class="stab" onclick="showStatTab('combo',this)">組み合わせ</button>
+    <button class="stab" onclick="showStatTab('wr',this)">ポケモン別勝率</button>
+    <button class="stab" onclick="showStatTab('hist',this)">履歴</button>
+  </div>
+  <div id="st-rate">
+    <div class="two">
+      <div class="card"><div class="card-title">自分の選出率</div><div id="my-pr"></div></div>
+      <div class="card"><div class="card-title">相手の選出率</div><div id="opp-pr"></div></div>
+    </div>
+    <div class="two">
+      <div class="card"><div class="card-title">自分の先発ペア率</div><div id="my-lr"></div></div>
+      <div class="card"><div class="card-title">相手の先発ペア率</div><div id="opp-lr"></div></div>
+    </div>
+  </div>
+  <div id="st-combo" style="display:none;">
+    <div class="card"><div class="card-title">自分の先発ペア別勝率（上位5）</div><div id="mc-top"></div></div>
+    <div class="card"><div class="card-title">自分の先発ペア別勝率（下位5）</div><div id="mc-bot"></div></div>
+    <div class="card"><div class="card-title">相手の先発ペア別勝率（上位5）</div><div id="oc-top"></div></div>
+    <div class="card"><div class="card-title">相手の先発ペア別勝率（下位5）</div><div id="oc-bot"></div></div>
+    <div class="card"><div class="card-title">自分先発上位5 × 相手先発上位10</div><div id="cross" style="overflow-x:auto;"></div></div>
+  </div>
+  <div id="st-wr" style="display:none;">
+    <div class="card"><div class="card-title">全データ：ポケモン別勝率（自分）</div><div id="my-pwr"></div></div>
+    <div class="card"><div class="card-title">全データ：ポケモン別勝率（相手）</div><div id="opp-pwr"></div></div>
+  </div>
+  <div id="st-hist" style="display:none;">
+    <div class="card"><div class="card-title">対戦履歴</div><div id="hist-list"></div></div>
+  </div>
+</div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="page-settings" class="page">
+<div class="inner">
+  <div class="card">
+    <div class="card-title">Notion連携</div>
+    <div id="nbar" class="nbar nidle">未設定</div>
+    <label class="slabel">Integration Token</label>
+    <input type="password" class="sinput" id="n-token" placeholder="secret_..." oninput="saveSettings()">
+    <label class="slabel">データベース ID</label>
+    <input type="text" class="sinput" id="n-db" placeholder="32文字のID" oninput="saveSettings()">
+    <div class="brow">
+      <button class="btn pri" onclick="testNotion()">接続テスト</button>
+    </div>
+    <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.8;">
+      必要なDB列：日時（Date）、勝敗（Select）、自分先発1・2、自分後発1・2、相手先発1・2、相手後発1・2、相手パーティ（Text）、パーティ名（Text）
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">データ管理</div>
+    <div class="brow">
+      <button class="btn" onclick="exportData()">JSONエクスポート</button>
+      <button class="btn dan" onclick="clearData()">対戦データを全削除</button>
+    </div>
+  </div>
+</div>
+</div>
+
+</div><!-- /pages -->
+
+<!-- MODAL -->
+<div id="modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modal-title">ポケモンを選択</h3>
+    <input type="text" id="modal-input" placeholder="図鑑No・日本語名・英語名で検索...">
+    <div class="modal-list" id="modal-list"></div>
+    <button class="mclose" onclick="closeModal()">キャンセル</button>
+  </div>
+</div>
+
+<script>
+// ===== POKEMON DB (embedded) =====
+const RAW_DB = [[1,"フシギダネ","くさ","どく"],[2,"フシギソウ","くさ","どく"],[3,"フシギバナ","くさ","どく"],[4,"ヒトカゲ","ほのお",""],[5,"リザード","ほのお",""],[6,"リザードン","ほのお","ひこう"],[7,"ゼニガメ","みず",""],[8,"カメール","みず",""],[9,"カメックス","みず",""],[10,"キャタピー","むし",""],[11,"トランセル","むし",""],[12,"バタフリー","むし","ひこう"],[13,"ビードル","むし","どく"],[14,"コクーン","むし","どく"],[15,"スピアー","むし","どく"],[16,"ポッポ","ノーマル","ひこう"],[17,"ピジョン","ノーマル","ひこう"],[18,"ピジョット","ノーマル","ひこう"],[19,"コラッタ","ノーマル",""],[20,"ラッタ","ノーマル",""],[21,"オニスズメ","ノーマル","ひこう"],[22,"オニドリル","ノーマル","ひこう"],[23,"アーボ","どく",""],[24,"アーボック","どく",""],[25,"ピカチュウ","でんき",""],[26,"ライチュウ","でんき",""],[27,"サンド","じめん",""],[28,"サンドパン","じめん",""],[29,"ニドラン♀","どく",""],[30,"ニドリーナ","どく",""],[31,"ニドクイン","どく","じめん"],[32,"ニドラン♂","どく",""],[33,"ニドリーノ","どく",""],[34,"ニドキング","どく","じめん"],[35,"ピッピ","ノーマル",""],[36,"ピクシー","ノーマル",""],[37,"ロコン","ほのお",""],[38,"キュウコン","ほのお",""],[39,"プリン","ノーマル","フェアリー"],[40,"プクリン","ノーマル","フェアリー"],[41,"ズバット","どく","ひこう"],[42,"ゴルバット","どく","ひこう"],[43,"ナゾノクサ","くさ","どく"],[44,"クサイハナ","くさ","どく"],[45,"ラフレシア","くさ","どく"],[46,"パラス","むし","くさ"],[47,"パラセクト","むし","くさ"],[48,"コンパン","むし","どく"],[49,"モルフォン","むし","どく"],[50,"ディグダ","じめん",""],[51,"ダグトリオ","じめん",""],[52,"ニャース","ノーマル",""],[53,"ペルシアン","ノーマル",""],[54,"コダック","みず",""],[55,"ゴルダック","みず",""],[56,"マンキー","かくとう",""],[57,"オコリザル","かくとう",""],[58,"ガーディ","ほのお",""],[59,"ウインディ","ほのお",""],[60,"ニョロモ","みず",""],[61,"ニョロゾ","みず",""],[62,"ニョロボン","みず","かくとう"],[63,"ケーシィ","エスパー",""],[64,"ユンゲラー","エスパー",""],[65,"フーディン","エスパー",""],[66,"ワンリキー","かくとう",""],[67,"ゴーリキー","かくとう",""],[68,"カイリキー","かくとう",""],[69,"マダツボミ","くさ","どく"],[70,"ウツドン","くさ","どく"],[71,"ウツボット","くさ","どく"],[72,"メノクラゲ","みず","どく"],[73,"ドククラゲ","みず","どく"],[74,"イシツブテ","いわ","じめん"],[75,"ゴローン","いわ","じめん"],[76,"ゴローニャ","いわ","じめん"],[77,"ポニータ","ほのお",""],[78,"ギャロップ","ほのお",""],[79,"ヤドン","みず","エスパー"],[80,"ヤドラン","みず","エスパー"],[81,"コイル","でんき","はがね"],[82,"レアコイル","でんき","はがね"],[83,"カモネギ","ノーマル","ひこう"],[84,"ドードー","ノーマル","ひこう"],[85,"ドードリオ","ノーマル","ひこう"],[86,"パウワウ","みず",""],[87,"ジュゴン","みず","こおり"],[88,"ベトベター","どく",""],[89,"ベトベトン","どく",""],[90,"シェルダー","みず",""],[91,"パルシェン","みず","こおり"],[92,"ゴース","ゴースト","どく"],[93,"ゴースト","ゴースト","どく"],[94,"ゲンガー","ゴースト","どく"],[95,"イワーク","いわ","じめん"],[96,"スリープ","エスパー",""],[97,"スリーパー","エスパー",""],[98,"クラブ","みず",""],[99,"キングラー","みず",""],[100,"ビリリダマ","でんき",""],[101,"マルマイン","でんき",""],[102,"タマタマ","くさ","エスパー"],[103,"ナッシー","くさ","エスパー"],[104,"カラカラ","じめん",""],[105,"ガラガラ","じめん",""],[106,"サワムラー","かくとう",""],[107,"エビワラー","かくとう",""],[108,"ベロリンガ","ノーマル",""],[109,"ドガース","どく",""],[110,"マタドガス","どく",""],[111,"サイホーン","じめん","いわ"],[112,"サイドン","じめん","いわ"],[113,"ラッキー","ノーマル",""],[114,"モンジャラ","くさ",""],[115,"ガルーラ","ノーマル",""],[116,"タッツー","みず",""],[117,"シードラ","みず",""],[118,"トサキント","みず",""],[119,"アズマオウ","みず",""],[120,"ヒトデマン","みず",""],[121,"スターミー","みず","エスパー"],[122,"バリヤード","エスパー",""],[123,"ストライク","むし","ひこう"],[124,"ルージュラ","こおり","エスパー"],[125,"エレブー","でんき",""],[126,"ブーバー","ほのお",""],[127,"カイロス","むし",""],[128,"ケンタロス","ノーマル",""],[129,"コイキング","みず",""],[130,"ギャラドス","みず","ひこう"],[131,"ラプラス","みず","こおり"],[132,"メタモン","ノーマル",""],[133,"イーブイ","ノーマル",""],[134,"シャワーズ","みず",""],[135,"サンダース","でんき",""],[136,"ブースター","ほのお",""],[137,"ポリゴン","ノーマル",""],[138,"オムナイト","いわ","みず"],[139,"オムスター","いわ","みず"],[140,"カブト","いわ","みず"],[141,"カブトプス","いわ","みず"],[142,"プテラ","いわ","ひこう"],[143,"カビゴン","ノーマル",""],[144,"フリーザー","こおり","ひこう"],[145,"サンダー","でんき","ひこう"],[146,"ファイヤー","ほのお","ひこう"],[147,"ミニリュウ","ドラゴン",""],[148,"ハクリュー","ドラゴン",""],[149,"カイリュー","ドラゴン","ひこう"],[150,"ミュウツー","エスパー",""],[151,"ミュウ","エスパー",""],[152,"チコリータ","くさ",""],[153,"ベイリーフ","くさ",""],[154,"メガニウム","くさ",""],[155,"ヒノアラシ","ほのお",""],[156,"マグマラシ","ほのお",""],[157,"バクフーン","ほのお",""],[158,"ワニノコ","みず",""],[159,"アリゲイツ","みず",""],[160,"オーダイル","みず",""],[161,"オタチ","ノーマル",""],[162,"オオタチ","ノーマル",""],[163,"ホーホー","ノーマル","ひこう"],[164,"ヨルノズク","ノーマル","ひこう"],[165,"レディバ","むし","ひこう"],[166,"レディアン","むし","ひこう"],[167,"イトマル","むし","どく"],[168,"アリアドス","むし","どく"],[169,"クロバット","どく","ひこう"],[170,"チョンチー","みず","でんき"],[171,"ランターン","みず","でんき"],[172,"ピチュー","でんき",""],[173,"ピィ","フェアリー",""],[174,"ププリン","ノーマル","フェアリー"],[175,"トゲピー","フェアリー",""],[176,"トゲチック","フェアリー","ひこう"],[177,"ネイティ","エスパー","ひこう"],[178,"ネイティオ","エスパー","ひこう"],[179,"メリープ","でんき",""],[180,"モコシャン","でんき",""],[181,"デンリュウ","でんき",""],[182,"キレイハナ","くさ","フェアリー"],[183,"マリル","みず","フェアリー"],[184,"マリルリ","みず","フェアリー"],[185,"ウソッキー","いわ",""],[186,"ニョロトノ","みず",""],[187,"ハネッコ","くさ","ひこう"],[188,"ポポッコ","くさ","ひこう"],[189,"ワタッコ","くさ","ひこう"],[190,"エイパム","ノーマル",""],[191,"ヒマナッツ","くさ",""],[192,"キマワリ","くさ",""],[193,"ヤンヤンマ","むし","ひこう"],[194,"ウパー","みず","じめん"],[195,"ヌオー","みず","じめん"],[196,"エーフィ","エスパー",""],[197,"ブラッキー","あく",""],[198,"ヤミカラス","あく","ひこう"],[199,"ヤドキング","みず","エスパー"],[200,"ムウマ","ゴースト",""],[201,"アンノーン","エスパー",""],[202,"ソーナンス","エスパー",""],[203,"キリンリキ","ノーマル","エスパー"],[204,"クヌギダマ","むし",""],[205,"フォレトス","むし","はがね"],[206,"ノコッチ","ノーマル",""],[207,"グライガー","じめん","ひこう"],[208,"ハガネール","はがね","じめん"],[209,"ブルー","フェアリー",""],[210,"グランブル","フェアリー",""],[211,"ハリーセン","みず","どく"],[212,"ハッサム","むし","はがね"],[213,"スボミー","むし","いわ"],[214,"ヘラクロス","むし","かくとう"],[215,"ニューラ","あく","こおり"],[216,"ヒメグマ","ノーマル",""],[217,"リングマ","ノーマル",""],[218,"マグマッグ","ほのお",""],[219,"マグカルゴ","ほのお","いわ"],[220,"ウリムー","こおり","じめん"],[221,"イノムー","こおり","じめん"],[222,"サニーゴ","みず","いわ"],[223,"テッポウオ","みず",""],[224,"オクタン","みず",""],[225,"デリバード","こおり","ひこう"],[226,"マンタイン","みず","ひこう"],[227,"エアームド","はがね","ひこう"],[228,"デルビル","あく","ほのお"],[229,"ヘルガー","あく","ほのお"],[230,"キングドラ","みず","ドラゴン"],[231,"ゴマゾウ","じめん",""],[232,"ドンファン","じめん",""],[233,"ポリゴン２","ノーマル",""],[234,"オドシシ","ノーマル",""],[235,"ドーブル","ノーマル",""],[236,"バルキー","かくとう",""],[237,"カポエラー","かくとう",""],[238,"ムチュール","こおり","エスパー"],[239,"エレキッド","でんき",""],[240,"ブビィ","ほのお",""],[241,"ミルタンク","ノーマル",""],[242,"ハピナス","ノーマル",""],[243,"ライコウ","でんき",""],[244,"エンテイ","ほのお",""],[245,"スイクン","みず",""],[246,"ヨーギラス","いわ","じめん"],[247,"サナギラス","いわ","じめん"],[248,"バンギラス","いわ","あく"],[249,"ルギア","エスパー","ひこう"],[250,"ホウオウ","ほのお","ひこう"],[251,"セレビィ","エスパー","くさ"],[252,"キモリ","くさ",""],[253,"ジュプトル","くさ",""],[254,"ジュカイン","くさ",""],[255,"アチャモ","ほのお",""],[256,"ワカシャモ","ほのお","かくとう"],[257,"バシャーモ","ほのお","かくとう"],[258,"ミズゴロウ","みず",""],[259,"ヌマクロー","みず","じめん"],[260,"ラグラージ","みず","じめん"],[261,"ポチエナ","あく",""],[262,"グラエナ","あく",""],[263,"ジグザグマ","ノーマル",""],[264,"マッスグマ","ノーマル",""],[265,"ケムッソ","むし",""],[266,"カラサリス","むし",""],[267,"アゲハント","むし","ひこう"],[268,"マユルド","むし",""],[269,"ドクケイル","むし","どく"],[270,"ハスボー","みず","くさ"],[271,"ハスブレロ","みず","くさ"],[272,"ルンパッパ","みず","くさ"],[273,"タネボー","くさ",""],[274,"コノハナ","くさ","あく"],[275,"ダーテング","くさ","あく"],[276,"キャモメ","ノーマル","ひこう"],[277,"ペリッパー","みず","ひこう"],[278,"ラルトス","エスパー","フェアリー"],[279,"キルリア","エスパー","フェアリー"],[280,"サーナイト","エスパー","フェアリー"],[281,"アメタマ","むし","みず"],[282,"アメモース","むし","ひこう"],[283,"キノコ","くさ",""],[284,"キノガッサ","くさ","かくとう"],[285,"ナマケロ","ノーマル",""],[286,"ヤルキモノ","ノーマル",""],[287,"ケッキング","ノーマル",""],[288,"ヘイガニ","みず",""],[289,"シザリガー","みず",""],[290,"ツチニン","むし","じめん"],[291,"テッカニン","むし",""],[292,"ヌケニン","むし","ゴースト"],[293,"ゴニョニョ","ノーマル",""],[294,"ドゴーム","ノーマル",""],[295,"バクオング","ノーマル",""],[296,"マクノシタ","かくとう",""],[297,"ハリテヤマ","かくとう",""],[298,"ルリリ","ノーマル","フェアリー"],[299,"ノズパス","いわ",""],[300,"エネコ","ノーマル",""],[301,"エネコロロ","ノーマル",""],[302,"ヤミラミ","あく","ゴースト"],[303,"クチート","はがね","フェアリー"],[304,"ドッコラー","はがね","いわ"],[305,"ドスコイ","はがね","いわ"],[306,"ボスゴドラ","はがね","いわ"],[307,"アサナン","かくとう","エスパー"],[308,"チャーレム","かくとう","エスパー"],[309,"ラクライ","でんき",""],[310,"ライボルト","でんき",""],[311,"プラスル","でんき",""],[312,"マイナン","でんき",""],[313,"バルビート","むし",""],[314,"イルミーゼ","むし",""],[315,"ロゼリア","くさ","どく"],[316,"ゴクリン","どく",""],[317,"マルノーム","どく",""],[318,"キバニア","みず","あく"],[319,"サメハダー","みず","あく"],[320,"ホエルコ","みず",""],[321,"ホエルオー","みず",""],[322,"ドンメル","ほのお","じめん"],[323,"バクーダ","ほのお","じめん"],[324,"コータス","ほのお",""],[325,"バネブー","エスパー",""],[326,"ブーピッグ","エスパー",""],[327,"パッチール","ノーマル",""],[328,"ナックラー","じめん"," "],[329,"ビブラーバ","じめん","ドラゴン"],[330,"フライゴン","じめん","ドラゴン"],[331,"サボネア","くさ",""],[332,"ノクタス","くさ","あく"],[333,"チルット","ノーマル","ひこう"],[334,"チルタリス","ドラゴン","ひこう"],[335,"ザングース","ノーマル",""],[336,"ハブネーク","どく",""],[337,"ルナトーン","いわ","エスパー"],[338,"ソルロック","いわ","エスパー"],[339,"ドジョッチ","みず","じめん"],[340,"ナマズン","みず","じめん"],[341,"ヘイガニ","みず",""],[342,"シザリガー","みず",""],[343,"ヤジロン","エスパー","じめん"],[344,"ネンドール","エスパー","じめん"],[345,"リリーラ","いわ","くさ"],[346,"ユレイドル","いわ","くさ"],[347,"アノプス","いわ","みず"],[348,"アーマルド","いわ","むし"],[349,"ヒンバス","みず",""],[350,"ミロカロス","みず",""],[351,"ポワルン","ノーマル",""],[352,"カクレオン","ノーマル",""],[353,"カゲボウズ","ゴースト",""],[354,"ジュペッタ","ゴースト",""],[355,"ヨマワル","ゴースト",""],[356,"サマヨール","ゴースト",""],[357,"トロピウス","くさ","ひこう"],[358,"チリーン","エスパー",""],[359,"アブソル","あく",""],[360,"ソーナノ","エスパー",""],[361,"ユキワラシ","こおり",""],[362,"オニゴーリ","こおり",""],[363,"タマザラシ","こおり",""],[364,"トドグラー","こおり",""],[365,"トドゼルガ","こおり","みず"],[366,"パールル","みず",""],[367,"ハンテール","みず",""],[368,"サクラビス","みず",""],[369,"ジーランス","みず","いわ"],[370,"ラブカス","みず",""],[371,"タツベイ","ドラゴン",""],[372,"コモルー","ドラゴン",""],[373,"ボーマンダ","ドラゴン","ひこう"],[374,"ダンバル","はがね","エスパー"],[375,"メタング","はがね","エスパー"],[376,"メタグロス","はがね","エスパー"],[377,"レジロック","いわ",""],[378,"レジアイス","こおり",""],[379,"レジスチル","はがね",""],[380,"ラティアス","ドラゴン","エスパー"],[381,"ラティオス","ドラゴン","エスパー"],[382,"カイオーガ","みず",""],[383,"グラードン","じめん",""],[384,"レックウザ","ドラゴン","ひこう"],[385,"ジラーチ","はがね","エスパー"],[386,"デオキシス","エスパー",""],[387,"ナエトル","くさ",""],[388,"ハヤシガメ","くさ",""],[389,"ドダイトス","くさ","じめん"],[390,"ヒコザル","ほのお",""],[391,"モウカザル","ほのお","かくとう"],[392,"ゴウカザル","ほのお","かくとう"],[393,"ポッチャマ","みず",""],[394,"ポッタイシ","みず",""],[395,"エンペルト","みず","はがね"],[396,"ムックル","ノーマル","ひこう"],[397,"ムクバード","ノーマル","ひこう"],[398,"ムクホーク","ノーマル","ひこう"],[399,"ビッパ","ノーマル",""],[400,"ビーダル","ノーマル","みず"],[401,"コロボーシ","むし",""],[402,"コロトック","むし",""],[403,"コリンク","でんき",""],[404,"ルクシオ","でんき",""],[405,"レントラー","でんき",""],[406,"ロゼイド","くさ","どく"],[407,"ブイゼル","みず",""],[408,"フローゼル","みず",""],[409,"チェリンボ","くさ",""],[410,"チェリム","くさ",""],[411,"カラナクシ","みず","じめん"],[412,"トリトドン","みず","じめん"],[413,"ミノマダム","むし","くさ"],[414,"ガーメイル","むし","ひこう"],[415,"ミツハニー","むし","ひこう"],[416,"ビークイン","むし","ひこう"],[417,"パチリス","でんき",""],[418,"ブイゼル","みず",""],[419,"フローゼル","みず",""],[420,"チェリンボ","くさ",""],[421,"チェリム","くさ",""],[422,"カラナクシ","みず","じめん"],[423,"トリトドン","みず","じめん"],[424,"エテボース","ノーマル",""],[425,"フワンテ","ゴースト","ひこう"],[426,"フワライド","ゴースト","ひこう"],[427,"ミミロル","ノーマル",""],[428,"ミミロップ","ノーマル",""],[429,"ムウマージ","ゴースト",""],[430,"ドンカラス","あく","ひこう"],[431,"ニャルマー","ノーマル",""],[432,"ブニャット","ノーマル",""],[433,"リーシャン","エスパー",""],[434,"スカンプー","どく","あく"],[435,"スカタンク","どく","あく"],[436,"ドーミラー","はがね","エスパー"],[437,"ドータクン","はがね","エスパー"],[438,"ウソハチ","いわ",""],[439,"マネネ","エスパー","フェアリー"],[440,"ピンプク","ノーマル",""],[441,"ペラップ","ノーマル","ひこう"],[442,"ミカルゲ","ゴースト","あく"],[443,"フカマル","ドラゴン","じめん"],[444,"ガバイト","ドラゴン","じめん"],[445,"ガブリアス","ドラゴン","じめん"],[446,"ゴンベ","ノーマル",""],[447,"リオル","かくとう",""],[448,"ルカリオ","かくとう","はがね"],[449,"ヒポポタス","じめん",""],[450,"カバルドン","じめん",""],[451,"スコルピ","どく","むし"],[452,"ドラピオン","どく","あく"],[453,"グレッグル","どく","かくとう"],[454,"ドクロッグ","どく","かくとう"],[455,"マスキッパ","くさ",""],[456,"ケイコウオ","みず",""],[457,"ネオラント","みず",""],[458,"タマンタ","みず","ひこう"],[459,"ユキカブリ","くさ","こおり"],[460,"ユキノオー","くさ","こおり"],[461,"マニューラ","あく","こおり"],[462,"じしゃく","でんき","はがね"],[463,"べロベルト","ノーマル",""],[464,"ドサイドン","じめん","いわ"],[465,"モジャンボ","くさ",""],[466,"エレキブル","でんき",""],[467,"ブーバーン","ほのお",""],[468,"トゲキッス","フェアリー","ひこう"],[469,"メガヤンマ","むし","ひこう"],[470,"リーフィア","くさ",""],[471,"グレイシア","こおり",""],[472,"グライオン","じめん","ひこう"],[473,"マンムー","こおり","じめん"],[474,"ポリゴンＺ","ノーマル",""],[475,"エルレイド","エスパー","かくとう"],[476,"ダイノーズ","いわ","はがね"],[477,"ヨノワール","ゴースト",""],[478,"ユキメノコ","こおり","ゴースト"],[479,"ロトム","でんき","ゴースト"],[480,"ユクシー","エスパー",""],[481,"エムリット","エスパー",""],[482,"アグノム","エスパー",""],[483,"ディアルガ","はがね","ドラゴン"],[484,"パルキア","みず","ドラゴン"],[485,"ヒードラン","ほのお","はがね"],[486,"レジギガス","ノーマル",""],[487,"ギラティナ","ゴースト","ドラゴン"],[488,"クレセリア","エスパー",""],[489,"フィオネ","みず",""],[490,"マナフィ","みず",""],[491,"ダークライ","あく",""],[492,"シェイミ","くさ",""],[493,"アルセウス","ノーマル",""],[494,"ビクティニ","エスパー","ほのお"],[495,"ツタージャ","くさ",""],[496,"ジャノビー","くさ",""],[497,"ジャローダ","くさ",""],[498,"ポカブ","ほのお",""],[499,"チャオブー","ほのお","かくとう"],[500,"エンブオー","ほのお","かくとう"],[501,"ミジュマル","みず",""],[502,"フタチマル","みず",""],[503,"ダイケンキ","みず",""],[504,"ミネズミ","ノーマル",""],[505,"ミルホッグ","ノーマル",""],[506,"ヨーテリー","ノーマル",""],[507,"ハーデリア","ノーマル",""],[508,"ムーランド","ノーマル",""],[509,"チョロネコ","あく",""],[510,"レパルダス","あく",""],[511,"ヤナップ","くさ",""],[512,"ヤナッキー","くさ",""],[513,"バオップ","ほのお",""],[514,"バオッキー","ほのお",""],[515,"ヒヤップ","みず",""],[516,"ヒヤッキー","みず",""],[517,"ムンナ","エスパー",""],[518,"ムシャーナ","エスパー",""],[519,"マメパト","ノーマル","ひこう"],[520,"ハトーボー","ノーマル","ひこう"],[521,"ケンホロウ","ノーマル","ひこう"],[522,"シママ","でんき",""],[523,"ゼブライカ","でんき",""],[524,"ダンゴロ","いわ",""],[525,"ガントル","いわ",""],[526,"ギガイアス","いわ",""],[527,"コウモリ","どく","ひこう"],[528,"ゴルーグ","じめん","ひこう"],[529,"モグリュー","じめん","はがね"],[530,"ドリュウズ","じめん","はがね"],[531,"タブンネ","ノーマル",""],[532,"ドッコラー","かくとう",""],[533,"ドテッコツ","かくとう",""],[534,"ローブシン","かくとう",""],[535,"オタマロ","みず",""],[536,"ガマガル","みず","じめん"],[537,"ガマゲロゲ","みず","じめん"],[538,"ナゲキ","かくとう",""],[539,"ダゲキ","かくとう",""],[540,"クルミル","むし","くさ"],[541,"クルマユ","むし","くさ"],[542,"ハハコモリ","むし","くさ"],[543,"フシデ","どく","むし"],[544,"ホイーガ","どく","むし"],[545,"ペンドラー","どく","むし"],[546,"モンメン","くさ",""],[547,"エルフーン","くさ",""],[548,"チュリネ","くさ",""],[549,"ドレディア","くさ",""],[550,"バスラオ","みず",""],[551,"メグロコ","じめん","あく"],[552,"ワルビル","じめん","あく"],[553,"ワルビアル","じめん","あく"],[554,"ダルマッカ","ほのお",""],[555,"ヒヒダルマ","ほのお",""],[556,"マラカッチ","くさ",""],[557,"イシズマイ","みず","いわ"],[558,"イワパレス","みず","いわ"],[559,"ズルッグ","あく","かくとう"],[560,"ズルズキン","あく","かくとう"],[561,"シンボラー","エスパー","ひこう"],[562,"デスマス","ゴースト",""],[563,"デスカーン","ゴースト",""],[564,"プロトーガ","みず","いわ"],[565,"アバゴーラ","みず","いわ"],[566,"アーケン","いわ","ひこう"],[567,"アーケオス","いわ","ひこう"],[568,"ヤブクロン","どく","あく"],[569,"ダストダス","どく","あく"],[570,"ゾロア","あく",""],[571,"ゾロアーク","あく",""],[572,"チラーミィ","ノーマル",""],[573,"チラチーノ","ノーマル",""],[574,"ゴチム","エスパー",""],[575,"ゴチミル","エスパー",""],[576,"ゴチルゼル","エスパー",""],[577,"ユニラン","エスパー",""],[578,"ダブラン","エスパー",""],[579,"ランクルス","エスパー",""],[580,"コアルヒー","みず","ひこう"],[581,"スワンナ","みず","ひこう"],[582,"バニプッチ","こおり",""],[583,"バニリッチ","こおり",""],[584,"バイバニラ","こおり",""],[585,"シキジカ","ノーマル","くさ"],[586,"メブキジカ","ノーマル","くさ"],[587,"エモンガ","でんき","ひこう"],[588,"カブルモ","むし",""],[589,"シュバルゴ","むし","はがね"],[590,"タマゲタケ","くさ","どく"],[591,"モロバレル","くさ","どく"],[592,"プルリル","みず","ゴースト"],[593,"ブルンゲル","みず","ゴースト"],[594,"ママンボウ","みず",""],[595,"デンチュラ","むし","でんき"],[596,"ジュフォレスト","むし","でんき"],[597,"テッシード","くさ","はがね"],[598,"ナットレイ","くさ","はがね"],[599,"ギアル","はがね",""],[600,"ギギアル","はがね",""],[601,"ギギギアル","はがね",""],[602,"シビシラス","でんき",""],[603,"シビビール","でんき",""],[604,"シビルドン","でんき",""],[605,"リグレー","エスパー",""],[606,"オーベム","エスパー",""],[607,"ヒトモシ","ほのお","ゴースト"],[608,"ランプラー","ほのお","ゴースト"],[609,"シャンデラ","ほのお","ゴースト"],[610,"キバゴ","ドラゴン",""],[611,"オノンド","ドラゴン",""],[612,"オノノクス","ドラゴン",""],[613,"クマシュン","こおり",""],[614,"ツンベアー","こおり",""],[615,"フリージオ","こおり",""],[616,"プルリル","みず","ゴースト"],[617,"アイスキャッスル","むし",""],[618,"ドジョッチ","みず","でんき"],[619,"コジョフー","かくとう",""],[620,"コジョンド","かくとう",""],[621,"クリムガン","ドラゴン",""],[622,"ゴビット","じめん","ゴースト"],[623,"ゴルーグ","じめん","ゴースト"],[624,"コマタナ","あく","はがね"],[625,"キリキザン","あく","はがね"],[626,"バッフロン","ノーマル",""],[627,"ワシボン","ノーマル","ひこう"],[628,"ウォーグル","ノーマル","ひこう"],[629,"バルチャイ","あく","ひこう"],[630,"バルジーナ","あく","ひこう"],[631,"クイタラン","ほのお","むし"],[632,"アイアント","むし","はがね"],[633,"モノズ","あく","ドラゴン"],[634,"ジヘッド","あく","ドラゴン"],[635,"サザンドラ","あく","ドラゴン"],[636,"メラルバ","ほのお","むし"],[637,"ウルガモス","ほのお","むし"],[638,"コバルオン","はがね","かくとう"],[639,"テラキオン","いわ","かくとう"],[640,"ビリジオン","くさ","かくとう"],[641,"トルネロス","ひこう",""],[642,"ボルトロス","でんき","ひこう"],[643,"レシラム","ドラゴン","ほのお"],[644,"ゼクロム","ドラゴン","でんき"],[645,"ランドロス","じめん","ひこう"],[646,"キュレム","ドラゴン","こおり"],[647,"ケルディオ","みず","かくとう"],[648,"メロエッタ","ノーマル","エスパー"],[649,"ゲノセクト","むし","はがね"],[650,"ハリマロン","くさ",""],[651,"ハリボーグ","くさ",""],[652,"ブリガロン","くさ","かくとう"],[653,"フォッコ","ほのお",""],[654,"テールナー","ほのお","エスパー"],[655,"マフォクシー","ほのお","エスパー"],[656,"ケロマツ","みず",""],[657,"ゲコガシラ","みず",""],[658,"ゲッコウガ","みず","あく"],[659,"ホルビー","ノーマル",""],[660,"ホルード","ノーマル","じめん"],[661,"ヤヤコマ","ノーマル","ひこう"],[662,"ヒノヤコマ","ほのお","ひこう"],[663,"ファイアロー","ほのお","ひこう"],[664,"コフキムシ","むし",""],[665,"コフーライ","むし",""],[666,"ビビヨン","むし","ひこう"],[667,"シシコ","ほのお","ノーマル"],[668,"カエンジシ","ほのお","ノーマル"],[669,"フラベベ","フェアリー",""],[670,"フラエッテ","フェアリー",""],[671,"フラージェス","フェアリー",""],[672,"メェークル","くさ",""],[673,"ゴーゴート","くさ",""],[674,"ヤンチャム","かくとう",""],[675,"ゴロンダ","かくとう","あく"],[676,"トリミアン","ノーマル",""],[677,"ニャスパー","エスパー",""],[678,"ニャオニクス","エスパー",""],[679,"ヒトツキ","はがね","ゴースト"],[680,"フタチキ","はがね","ゴースト"],[681,"ギルガルド","はがね","ゴースト"],[682,"シュシュプ","フェアリー",""],[683,"フレフワン","フェアリー",""],[684,"ペロッパフ","フェアリー",""],[685,"ペロリーム","フェアリー",""],[686,"カラマネロ","あく","エスパー"],[687,"マーイーカ","あく","エスパー"],[688,"ガメノデス","いわ","みず"],[689,"カメテテ","いわ","みず"],[690,"ヒドイデ","みず","どく"],[691,"ドヒドイデ","みず","どく"],[692,"ウデッポウ","みず",""],[693,"ブロスター","みず",""],[694,"エリキテル","でんき","ノーマル"],[695,"エレザード","でんき","ノーマル"],[696,"チゴラス","いわ","ドラゴン"],[697,"ガチゴラス","いわ","ドラゴン"],[698,"アマルス","いわ","こおり"],[699,"アマルルガ","いわ","こおり"],[700,"ニンフィア","フェアリー",""],[701,"マリルリ","フェアリー","ひこう"],[702,"デデンネ","でんき","フェアリー"],[703,"メレシー","いわ","フェアリー"],[704,"ヌメラ","ドラゴン",""],[705,"ヌメイル","ドラゴン",""],[706,"ヌメルゴン","ドラゴン",""],[707,"クレッフィ","はがね","フェアリー"],[708,"オーロット","ゴースト","くさ"],[709,"ブルガネット","ゴースト","くさ"],[710,"パンプジン","ゴースト","くさ"],[711,"バケッチャ","ゴースト","くさ"],[712,"クレベース","こおり","はがね"],[713,"コリンク","こおり","はがね"],[714,"オンバット","ドラゴン","ひこう"],[715,"オンバーン","ドラゴン","ひこう"],[716,"ゼルネアス","フェアリー",""],[717,"イベルタル","あく","ひこう"],[718,"ジガルデ","ドラゴン","じめん"],[719,"ディアンシー","いわ","フェアリー"],[720,"フーパ","エスパー","ゴースト"],[721,"ボルケニオン","ほのお","みず"],[722,"モクロー","くさ","ひこう"],[723,"フクスロー","くさ","ひこう"],[724,"ジュナイパー","くさ","ゴースト"],[725,"ニャビー","ほのお",""],[726,"ニャヒート","ほのお",""],[727,"ガオガエン","ほのお","あく"],[728,"アシマリ","みず",""],[729,"オシャマリ","みず",""],[730,"アシレーヌ","みず","フェアリー"],[731,"ツツケラ","ノーマル","ひこう"],[732,"ケララッパ","ノーマル","ひこう"],[733,"ドデカバシ","ノーマル","ひこう"],[734,"イワンコ","いわ",""],[735,"ルガルガン","いわ",""],[736,"グソクムシャ","むし","みず"],[737,"デンジムシ","むし","でんき"],[738,"クワガノン","むし","でんき"],[739,"ケケンカニ","かくとう","みず"],[740,"ガラガラ","かくとう","みず"],[741,"オドリドリ","ノーマル","ひこう"],[742,"アブリー","むし","フェアリー"],[743,"アブリボン","むし","フェアリー"],[744,"ロコン","みず",""],[745,"ニャオニクス","フェアリー","エスパー"],[746,"ヨワシ","みず",""],[747,"ヒドイデ","どく","みず"],[748,"ドヒドイデ","どく","みず"],[749,"ドロバンコ","じめん",""],[750,"バンバドロ","じめん",""],[751,"シズクモ","みず","むし"],[752,"オニシズクモ","みず","むし"],[753,"メテノ","いわ","ひこう"],[754,"ランターン","ほのお","いわ"],[755,"キノコキノ","フェアリー",""],[756,"マシェード","くさ","フェアリー"],[757,"ヤトウモリ","どく","ほのお"],[758,"エンニュート","どく","ほのお"],[759,"ネッコアラ","ノーマル",""],[760,"キテルグマ","ノーマル","かくとう"],[761,"アマカジ","くさ",""],[762,"アママイコ","くさ","フェアリー"],[763,"アマージョ","くさ","フェアリー"],[764,"コスモッグ","エスパー",""],[765,"コスモウム","エスパー",""],[766,"ミミッキュ","ゴースト","フェアリー"],[767,"デンジュモク","でんき","くさ"],[768,"カミツルギ","くさ","はがね"],[769,"テッカグヤ","はがね","ひこう"],[770,"アクジキング","どく","あく"],[771,"マッシブーン","むし","かくとう"],[772,"フェローチェ","むし","ひこう"],[773,"ネクロズマ","エスパー",""],[774,"ソルガレオ","エスパー","はがね"],[775,"ルナアーラ","エスパー","ゴースト"],[776,"マーシャドー","かくとう","ゴースト"],[777,"ウツロイド","どく","いわ"],[778,"アーゴヨン","どく","ドラゴン"],[779,"ズガドーン","ほのお","むし"],[780,"フォルム","エスパー","はがね"],[781,"ブルルル","でんき","じめん"],[782,"セレビィ","エスパー","くさ"],[810,"サルノリ","くさ",""],[811,"バチンキー","くさ",""],[812,"ゴリランダー","くさ",""],[813,"ヒバニー","ほのお",""],[814,"ラビフット","ほのお",""],[815,"エースバーン","ほのお",""],[816,"メッソン","みず",""],[817,"ジメレオン","みず",""],[818,"インテレオン","みず",""],[819,"ホシガリス","ノーマル",""],[820,"ヨクバリス","ノーマル",""],[821,"ツブルル","ノーマル","ひこう"],[822,"ストリンダー","でんき","どく"],[823,"アーマーガア","はがね","ひこう"],[824,"サッチムシ","むし",""],[825,"レドームシ","むし","エスパー"],[826,"オーロンゲ","あく","フェアリー"],[827,"タチフサグマ","あく","ノーマル"],[828,"サダイジャ","あく","ノーマル"],[829,"バチンウニ","でんき",""],[830,"パルスワン","でんき","フェアリー"],[831,"ワンパチ","でんき",""],[832,"イオルブ","むし","どく"],[833,"ジュラルドン","はがね","ドラゴン"],[834,"クイタラン","ほのお","むし"],[835,"サンダース","でんき","ひこう"],[836,"ドラパルト","ドラゴン","ゴースト"],[837,"ウォーグル","はがね","ひこう"],[838,"ガラガラ","ほのお",""],[839,"ボルケニオン","ほのお","みず"],[840,"マホミル","フェアリー",""],[841,"マホイップ","フェアリー",""],[842,"タイレーツ","かくとう",""],[843,"ゴマゾウ","はがね","ドラゴン"],[844,"ランドロス","でんき","ドラゴン"],[845,"ダルマッカ","こおり",""],[846,"ヒヒダルマ","こおり","ほのお"],[847,"モスノウ","こおり","むし"],[848,"マリルリ","みず","フェアリー"],[849,"ストリンダー","でんき","どく"],[850,"ヤバチャ","くさ","ゴースト"],[851,"ポットデス","くさ","ゴースト"],[852,"サシカマス","みず",""],[853,"カマスジョー","みず",""],[854,"エルフーン","くさ","フェアリー"],[855,"ブリムオン","エスパー","フェアリー"],[856,"ニャイキング","はがね",""],[857,"ハッサム","はがね","ひこう"],[858,"ネギガナイト","かくとう","ひこう"],[859,"ゴールドウルフ","ノーマル","くさ"],[860,"コオリッポ","こおり",""],[861,"バドレックス","エスパー","くさ"],[862,"ブリザポス","こおり","いわ"],[863,"レイスポス","こおり","ゴースト"],[864,"ザシアン","フェアリー",""],[865,"ザマゼンタ","かくとう",""],[866,"ムゲンダイナ","どく","ドラゴン"],[867,"ジバコイル","でんき","はがね"],[868,"ニンフィア","フェアリー",""],[869,"マホイップ","フェアリー",""],[870,"インテレオン","みず",""],[871,"ドラパルト","ドラゴン","ゴースト"],[872,"ラプラス","みず","こおり"],[873,"ガラルフリーザー","エスパー","ひこう"],[874,"ガラルサンダー","かくとう","ひこう"],[875,"ガラルファイヤー","あく","ひこう"],[876,"コオリッポ","こおり",""],[877,"モルペコ","でんき","あく"],[878,"ジュラルドン","はがね","ドラゴン"],[879,"アーマーガア","はがね","ひこう"],[880,"フリーザー","こおり","ひこう"],[881,"サンダー","でんき","ひこう"],[882,"ファイヤー","ほのお","ひこう"],[883,"レジエレキ","でんき",""],[884,"レジドラゴ","ドラゴン",""],[885,"ブリムオン","エスパー","フェアリー"],[886,"マホイップ","フェアリー",""],[887,"ザシアン","はがね","フェアリー"],[888,"ザマゼンタ","はがね","かくとう"],[889,"ムゲンダイナ","どく","ドラゴン"],[890,"ジバコイル","でんき","はがね"],[891,"ブリザポス","こおり","いわ"],[892,"レイスポス","こおり","ゴースト"],[893,"バドレックス","エスパー","くさ"],[906,"ニャオハ","くさ",""],[907,"ニャローテ","くさ",""],[908,"マスカーニャ","くさ","あく"],[909,"ホゲータ","ほのお",""],[910,"アチゲータ","ほのお",""],[911,"ラウドボーン","ほのお","ゴースト"],[912,"クワッス","みず",""],[913,"ウェルカモ","みず",""],[914,"ウェーニバル","みず","かくとう"],[915,"パフュートン","ノーマル",""],[916,"パモ","でんき",""],[917,"パモット","でんき","かくとう"],[918,"パーモット","でんき","かくとう"],[919,"タマンチュラ","むし",""],[920,"ワナイダー","むし",""],[921,"マメバッタ","むし","じめん"],[922,"イダイナキバ","じめん","ノーマル"],[923,"サケブシッポ","ノーマル","エスパー"],[924,"ミガルーサ","みず","エスパー"],[925,"ウミディグダ","みず",""],[926,"ウミトリオ","みず",""],[927,"シルシュルー","ノーマル","どく"],[928,"タギングル","ノーマル","どく"],[929,"ノノクワガタ","むし",""],[930,"カイデン","でんき","ひこう"],[931,"エレズン","でんき","どく"],[932,"オーニャチュラ","でんき",""],[933,"ハラバリー","でんき",""],[934,"ウネルミナモ","みず","ドラゴン"],[935,"クエスパトラ","エスパー","ひこう"],[936,"グルートックス","どく","あく"],[937,"セビエ","ドラゴン",""],[938,"セゴール","ドラゴン","こおり"],[939,"セグレイブ","ドラゴン","こおり"],[940,"ブロロン","ほのお","ゴースト"],[941,"ブロロローム","ほのお","ゴースト"],[942,"ガケガニ","みず","いわ"],[943,"カラミンゴ","ほのお","ひこう"],[944,"ソウブレイズ","ほのお","エスパー"],[945,"アノホラグサ","くさ","ゴースト"],[946,"アノクサ","くさ","ゴースト"],[947,"フリモスラ","ほのお","むし"],[948,"ゴルゴネア","あく","むし"],[949,"オリーニョ","くさ","ノーマル"],[950,"オリーヴァ","くさ","ノーマル"],[951,"タイカイデン","でんき","ひこう"],[952,"シルシュルー","ノーマル","どく"],[953,"デカヌチャン","フェアリー","はがね"],[954,"マスカーニャ","くさ","あく"],[955,"ラウドボーン","ほのお","ゴースト"],[956,"ウェーニバル","みず","かくとう"],[957,"ボチ","ゴースト","じめん"],[958,"ハカドッグ","ゴースト","じめん"],[959,"コジオ","いわ",""],[960,"オリーニョ","くさ","ノーマル"],[961,"フリモスラ","ほのお","むし"],[962,"モロバレル","くさ","どく"],[963,"キラフロル","どく","いわ"],[964,"パルデアウォーグル","かくとう","ひこう"],[965,"イーユイ","あく","ほのお"],[966,"チオンジェン","あく","くさ"],[967,"パオジアン","あく","こおり"],[968,"コレクレー","はがね",""],[969,"サーフゴー","はがね","ゴースト"],[970,"テツノワダチ","はがね","じめん"],[971,"テツノカイナ","でんき","かくとう"],[972,"テツノコウベ","はがね","エスパー"],[973,"テツノドクガ","ほのお","どく"],[974,"テツノイバラ","はがね","フェアリー"],[975,"テツノカシラ","はがね","ドラゴン"],[976,"テツノブジン","はがね","フェアリー"],[977,"テツノコウベ","はがね","エスパー"],[978,"コライドン","かくとう","ドラゴン"],[979,"ミライドン","でんき","ドラゴン"],[980,"ウォーグル","ノーマル","ひこう"],[981,"チオンジェン","あく","くさ"],[982,"パオジアン","あく","こおり"],[983,"イーユイ","あく","ほのお"],[984,"オーガポン","くさ",""],[985,"ブリジュラス","はがね","ドラゴン"],[986,"テツノコウベ","はがね","エスパー"],[987,"テツノカシラ","はがね","ドラゴン"],[988,"テツノイバラ","はがね","フェアリー"],[989,"テツノブジン","はがね","フェアリー"],[990,"テツノカイナ","でんき","かくとう"],[991,"テツノワダチ","はがね","じめん"],[992,"テツノドクガ","ほのお","どく"],[993,"テツノコウベ","はがね","エスパー"],[994,"テツノカシラ","はがね","ドラゴン"],[995,"テツノイバラ","はがね","フェアリー"],[996,"テツノブジン","はがね","フェアリー"],[997,"テツノカイナ","でんき","かくとう"],[998,"テツノワダチ","はがね","じめん"],[999,"テツノドクガ","ほのお","どく"],[1000,"テツノコウベ","はがね","エスパー"],[1001,"テツノカシラ","はがね","ドラゴン"],[1002,"テツノイバラ","はがね","フェアリー"],[1003,"テツノブジン","はがね","フェアリー"],[1004,"テツノカイナ","でんき","かくとう"],[1005,"テツノワダチ","はがね","じめん"]];
+// RAW_DB: [[no, name, type1, type2], ...]
+// sprite: https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{no}.png
+// yakkun: https://yakkun.com/sv/pokemon_list/n{no}
+
+const POKE_MAP = {}; // no -> {no,name,type1,type2}
+const POKE_LIST = []; // searchable list
+RAW_DB.forEach(([no,name,type1,type2]) => {
+  const p = {no,name,type1,type2};
+  POKE_MAP[no] = p;
+  POKE_LIST.push(p);
+});
+
+function sprite(no){ return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${no}.png`; }
+function yakkun(no){ return `https://yakkun.com/sv/pokemon_list/n${no}`; }
+function findByName(name){ return POKE_LIST.find(p => p.name === name); }
+
+// TYPE COLORS
+const TC = {
+  ノーマル:'#9FA19F',ほのお:'#E62829',みず:'#2980EF',でんき:'#FAC000',くさ:'#3FA129',
+  こおり:'#3DCEF3',かくとう:'#FF8000',どく:'#9141CB',じめん:'#915121',ひこう:'#81B9EF',
+  エスパー:'#EF4179',むし:'#91A119',いわ:'#AFA981',ゴースト:'#704170',ドラゴン:'#5060E1',
+  あく:'#624D4E',はがね:'#60A1B8',フェアリー:'#EF70EF',ステラ:'#40B5A5'
+};
+function typeBadge(t){ if(!t)return ''; return `<span class="tb" style="background:${TC[t]||'#888'}22;color:${TC[t]||'#888'}">${t}</span>`; }
+
+// ===== STATE =====
+let ST = (() => { try { return JSON.parse(localStorage.getItem('pb3')||'null'); } catch{return null;} })()||{
+  parties:[{id:'p1',name:'パーティ1',pokemon:[]}],
+  activeParty:'p1',
+  battles:[],
+  notionToken:'',notionDb:''
+};
+
+let oppParty=[]; // current battle session opponent party (array of {no,name,type1,type2} or null)
+let mysel={lead:[],back:[]};
+let oppsel={lead:[],back:[]};
+let battleResult=null;
+let curStep=1;
+let pfFilter='all';
+
+function sv(){ localStorage.setItem('pb3',JSON.stringify(ST)); }
+function getAP(){ return ST.parties.find(p=>p.id===ST.activeParty)||ST.parties[0]; }
+
+// ===== MODAL =====
+let modalCb=null;
+let modalInput=null;
+let modalSearchTimer=null;
+
+function openModal(title, cb){
+  modalCb=cb;
+  document.getElementById('modal-title').textContent=title;
+  const inp=document.getElementById('modal-input');
+  inp.value='';
+  document.getElementById('modal').classList.add('open');
+  renderModalList('');
+  setTimeout(()=>inp.focus(),100);
+  inp.oninput=function(){ clearTimeout(modalSearchTimer); modalSearchTimer=setTimeout(()=>renderModalList(this.value),120); };
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+function renderModalList(q){
+  const el=document.getElementById('modal-list');
+  const qt=q.trim().toLowerCase();
+  let results;
+  if(!qt){ results=POKE_LIST.slice(0,80); }
+  else {
+    const num=parseInt(qt);
+    results=POKE_LIST.filter(p=>
+      (!isNaN(num)&&p.no===num)||
+      p.name.includes(q.trim())||
+      p.name.toLowerCase().includes(qt)
+    ).slice(0,60);
+  }
+  el.innerHTML='';
+  if(!results.length){el.innerHTML='<div class="mloading">見つかりません</div>';return;}
+  results.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='mitem';
+    d.innerHTML=`<img src="${sprite(p.no)}" loading="lazy" onerror="this.style.opacity=0">
+      <div class="mitem-info">
+        <div class="mname">${p.name} <span style="font-size:10px;color:var(--text3);">No.${p.no}</span></div>
+        <div class="mtypes">${typeBadge(p.type1)}${typeBadge(p.type2)}</div>
+        <a class="yakkun-link" href="${yakkun(p.no)}" target="_blank" onclick="event.stopPropagation()">やっくん ↗</a>
+      </div>`;
+    d.onclick=()=>{ modalCb&&modalCb(p); closeModal(); };
+    el.appendChild(d);
+  });
+}
+
+// ===== PAGE NAV =====
+function showPage(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(p==='party'){renderPartyTabs();renderPartySlots();}
+  if(p==='battle'){renderBattleMyParty();renderOppSlots();}
+  if(p==='stats'){renderPfBar();renderStats();}
+  if(p==='settings'){loadSettings();}
+}
+
+// ===== POKE SLOT RENDER =====
+function renderSlotEl(poke, slotIndex, context){
+  const div=document.createElement('div');
+  div.className='pslot'+(poke?'':' empty');
+  div.innerHTML=`<span class="snum">${slotIndex+1}</span>`;
+  if(poke){
+    div.innerHTML+=`<img src="${sprite(poke.no)}" loading="lazy" onerror="this.style.opacity=0">
+      <div class="sname">${poke.name}</div>
+      <div class="stypes">${typeBadge(poke.type1)}${typeBadge(poke.type2)}</div>
+      <button class="rx" onclick="removeSlot(event,'${context}',${slotIndex})">×</button>`;
+    div.onclick=(e)=>{ if(e.target.classList.contains('rx'))return; openSlot(context,slotIndex); };
+  } else {
+    div.innerHTML+=`<div class="add-icon">＋</div><div class="sname" style="color:var(--text3)">追加</div>`;
+    div.onclick=()=>openSlot(context,slotIndex);
+  }
+  return div;
+}
+
+function openSlot(context, idx){
+  openModal(`スロット${idx+1} を選択`, (p)=>{
+    if(context==='party'){
+      const ap=getAP();
+      if(ap.pokemon.some(x=>x&&x.no===p.no)){alert(`${p.name}はすでにこのパーティにいます`);return;}
+      ap.pokemon[idx]=p; sv(); renderPartySlots(); renderBattleMyParty();
+    } else if(context==='opp'){
+      if(oppParty.some(x=>x&&x.no===p.no)){alert(`${p.name}はすでに相手パーティに登録されています`);return;}
+      oppParty[idx]=p; renderOppSlots();
+    }
+  });
+}
+
+function removeSlot(e, context, idx){
+  e.stopPropagation();
+  if(context==='party'){ const ap=getAP(); ap.pokemon.splice(idx,1); sv(); renderPartySlots(); renderBattleMyParty(); }
+  else if(context==='opp'){ oppParty.splice(idx,1); renderOppSlots(); }
+}
+
+// ===== PARTY PAGE =====
+function renderPartyTabs(){
+  const el=document.getElementById('party-tabs');
+  el.innerHTML='';
+  ST.parties.forEach(p=>{
+    const btn=document.createElement('button');
+    btn.className='ptab'+(p.id===ST.activeParty?' active':'');
+    btn.textContent=p.name;
+    btn.onclick=()=>{ ST.activeParty=p.id; sv(); renderPartyTabs(); renderPartySlots(); renderBattleMyParty(); };
+    btn.ondblclick=()=>renameParty(p.id);
+    el.appendChild(btn);
+  });
+}
+
+function renderPartySlots(){
+  const ap=getAP();
+  document.getElementById('party-edit-label').textContent=`${ap.name}を編集（タブをダブルタップでリネーム）`;
+  const el=document.getElementById('party-slots');
+  el.innerHTML='';
+  for(let i=0;i<6;i++) el.appendChild(renderSlotEl(ap.pokemon[i]||null,i,'party'));
+}
+
+function addParty(){
+  const name=prompt('新しいパーティ名を入力','パーティ'+(ST.parties.length+1));
+  if(!name)return;
+  const id='p'+Date.now();
+  ST.parties.push({id,name,pokemon:[]});
+  ST.activeParty=id; sv(); renderPartyTabs(); renderPartySlots();
+}
+
+function delParty(){
+  if(ST.parties.length<=1){alert('最後のパーティは削除できません');return;}
+  if(!confirm(`「${getAP().name}」を削除しますか？`))return;
+  ST.battles=ST.battles.filter(b=>b.partyId!==ST.activeParty);
+  ST.parties=ST.parties.filter(p=>p.id!==ST.activeParty);
+  ST.activeParty=ST.parties[0].id; sv(); renderPartyTabs(); renderPartySlots();
+}
+
+function renameParty(id){
+  const p=ST.parties.find(x=>x.id===id);
+  const n=prompt('パーティ名を変更',p.name);
+  if(!n)return; p.name=n; sv(); renderPartyTabs(); renderPartySlots();
+}
+
+// ===== BATTLE PAGE =====
+function renderBattleMyParty(){
+  const ap=getAP();
+  const el=document.getElementById('b-my-party');
+  el.innerHTML='';
+  for(let i=0;i<6;i++) el.appendChild(renderSlotEl(ap.pokemon[i]||null,i,'view'));
+}
+
+function renderOppSlots(){
+  const el=document.getElementById('opp-slots');
+  el.innerHTML='';
+  for(let i=0;i<6;i++) el.appendChild(renderSlotEl(oppParty[i]||null,i,'opp'));
+}
+
+function goStep(n){
+  const myPokes=getAP().pokemon.filter(Boolean);
+  if(n===2&&oppParty.filter(Boolean).length<1){alert('相手のポケモンを最低1匹入力してください');return;}
+  if(n===3){
+    if(mysel.lead.length+mysel.back.length<4){alert('自分の選出を4匹選んでください（先発2→後発2の順）');return;}
+    if(oppsel.lead.length+oppsel.back.length<4){alert('相手の選出を4匹選んでください（先発2→後発2の順）');return;}
+    renderConfirm();
+  }
+  curStep=n;
+  ['bs1','bs2','bs3'].forEach((id,i)=>{ document.getElementById(id).style.display=i===n-1?'block':'none'; });
+  document.querySelectorAll('.sdot').forEach((d,i)=>{ d.className='sdot'+(i<n-1?' done':i===n-1?' active':''); });
+  const labels=['ステップ1：相手のパーティを記録','ステップ2：選出を選ぶ','ステップ3：結果を記録'];
+  document.getElementById('slabel').textContent=labels[n-1];
+  if(n===2){ renderSelGrid(myPokes,'my-selgrid',mysel); renderSelGrid(oppParty.filter(Boolean),'opp-selgrid',oppsel); }
+}
+
+function renderSelGrid(pokes, elId, sel){
+  const el=document.getElementById(elId);
+  el.innerHTML='';
+  pokes.forEach(p=>{
+    const isLead=sel.lead.some(x=>x.no===p.no);
+    const isBack=sel.back.some(x=>x.no===p.no);
+    const btn=document.createElement('button');
+    btn.className='selbtn'+(isLead?' lead':isBack?' back':'');
+    const label=isLead?'先発':isBack?'後発':p.name;
+    btn.innerHTML=`<img src="${sprite(p.no)}" loading="lazy" onerror="this.style.opacity=0">
+      <div class="sl">${label}</div>
+      <div class="stypes2">${typeBadge(p.type1)}${typeBadge(p.type2)}</div>`;
+    btn.onclick=()=>toggleSel(p,pokes,elId,sel);
+    el.appendChild(btn);
+  });
+}
+
+function toggleSel(p, pokes, elId, sel){
+  if(sel.lead.some(x=>x.no===p.no)) sel.lead=sel.lead.filter(x=>x.no!==p.no);
+  else if(sel.back.some(x=>x.no===p.no)) sel.back=sel.back.filter(x=>x.no!==p.no);
+  else if(sel.lead.length<2) sel.lead.push(p);
+  else if(sel.back.length<2) sel.back.push(p);
+  renderSelGrid(pokes,elId,sel);
+}
+
+function renderConfirm(){
+  [['my-confirm',mysel],['opp-confirm',oppsel]].forEach(([id,sel])=>{
+    const el=document.getElementById(id);
+    el.innerHTML='';
+    [['先発',sel.lead],['後発',sel.back]].forEach(([pos,arr])=>{
+      arr.forEach(p=>{
+        const d=document.createElement('div');
+        d.className='cpoke';
+        d.innerHTML=`<span class="badge-pos ${pos==='先発'?'bpl':'bpb'}">${pos}</span>
+          <img src="${sprite(p.no)}" onerror="this.style.opacity=0">
+          <div>
+            <div style="font-size:11px;">${p.name}</div>
+            <div style="display:flex;gap:2px;margin-top:2px;">${typeBadge(p.type1)}${typeBadge(p.type2)}</div>
+          </div>`;
+        el.appendChild(d);
+      });
+    });
+  });
+}
+
+function setResult(r){
+  battleResult=r;
+  document.getElementById('rb-win').classList.toggle('on',r==='win');
+  document.getElementById('rb-loss').classList.toggle('on',r==='loss');
+}
+
+async function saveBattle(){
+  if(!battleResult){alert('勝敗を選択してください');return;}
+  const ap=getAP();
+  const b={
+    id:Date.now(), date:new Date().toISOString(),
+    partyId:ap.id, partyName:ap.name,
+    result:battleResult,
+    myLead:mysel.lead.map(p=>p.name),
+    myBack:mysel.back.map(p=>p.name),
+    oppLead:oppsel.lead.map(p=>p.name),
+    oppBack:oppsel.back.map(p=>p.name),
+    oppParty:oppParty.filter(Boolean).map(p=>p.name)
+  };
+  ST.battles.unshift(b); sv();
+  if(ST.notionToken&&ST.notionDb) syncNotion(b);
+  alert('記録しました！');
+  oppParty=[]; mysel={lead:[],back:[]}; oppsel={lead:[],back:[]}; battleResult=null;
+  renderOppSlots(); goStep(1);
+  document.getElementById('rb-win').classList.remove('on');
+  document.getElementById('rb-loss').classList.remove('on');
+}
+
+// ===== STATS =====
+function renderPfBar(){
+  const el=document.getElementById('pf-bar');
+  el.innerHTML='';
+  const all=document.createElement('button');
+  all.className='pfbtn'+(pfFilter==='all'?' active':'');
+  all.textContent='全パーティ';
+  all.onclick=()=>{ pfFilter='all'; renderPfBar(); renderStats(); };
+  el.appendChild(all);
+  ST.parties.forEach(p=>{
+    const b=document.createElement('button');
+    b.className='pfbtn'+(pfFilter===p.id?' active':'');
+    b.textContent=p.name;
+    b.onclick=()=>{ pfFilter=p.id; renderPfBar(); renderStats(); };
+    el.appendChild(b);
+  });
+}
+
+function getFilteredBattles(){ return pfFilter==='all'?ST.battles:ST.battles.filter(b=>b.partyId===pfFilter); }
+
+function renderStats(){
+  const bs=getFilteredBattles();
+  const wins=bs.filter(b=>b.result==='win').length;
+  const total=bs.length;
+  const pct=total?Math.round(wins/total*100):0;
+  document.getElementById('stat-summary').innerHTML=`
+    <div class="scard"><div class="sv">${total}</div><div class="sl2">対戦数</div></div>
+    <div class="scard"><div class="sv" style="color:var(--win)">${wins}</div><div class="sl2">勝利数</div><div class="sub">${wins}/${total}</div></div>
+    <div class="scard"><div class="sv" style="color:${pct>=50?'var(--win)':'var(--loss)'}">${pct}%</div><div class="sl2">勝率</div></div>`;
+  renderPickRates(bs);
+  renderComboStats(bs);
+  renderPokeWR();
+  renderHist(bs);
+}
+
+function renderPickRates(bs){
+  renderPR('my-pr',bs,b=>[...b.myLead,...b.myBack],bs.length,false);
+  renderPR('opp-pr',bs,b=>[...b.oppLead,...b.oppBack],bs.length,false);
+  renderPR('my-lr',bs,b=>b.myLead.length>=2?[b.myLead.slice().sort().join('＋')]:[], bs.length,true);
+  renderPR('opp-lr',bs,b=>b.oppLead.length>=2?[b.oppLead.slice().sort().join('＋')]:[], bs.length,true);
+}
+
+function renderPR(elId,bs,ext,total,isPair){
+  const counts={};
+  bs.forEach(b=>ext(b).forEach(k=>{counts[k]=(counts[k]||0)+1;}));
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,isPair?5:12);
+  const el=document.getElementById(elId);
+  if(!sorted.length){el.innerHTML='<div class="empty">データなし</div>';return;}
+  el.innerHTML='';
+  sorted.forEach(([name,cnt])=>{
+    const pct=Math.round(cnt/total*100);
+    const div=document.createElement('div');
+    div.className='rrow';
+    if(!isPair){
+      const p=findByName(name);
+      div.innerHTML=`<img src="${p?sprite(p.no):''}" loading="lazy" onerror="this.style.opacity=0">
+        <span class="rname">${name}</span>
+        <div style="display:flex;gap:2px;flex-shrink:0;">${p?typeBadge(p.type1)+typeBadge(p.type2):''}</div>
+        <div class="rbwrap"><div class="rb" style="width:${pct}%;background:var(--acc)"></div></div>
+        <span class="rval">${pct}%</span>`;
+    } else {
+      const parts=name.split('＋');
+      let imgs='';
+      parts.forEach(n=>{ const p=findByName(n); imgs+=`<img src="${p?sprite(p.no):''}" style="width:28px;height:28px;object-fit:contain;image-rendering:pixelated;" loading="lazy" onerror="this.style.opacity=0">`; });
+      div.innerHTML=`<div class="ppair">${imgs}</div>
+        <span class="rname">${name}</span>
+        <div class="rbwrap"><div class="rb" style="width:${pct}%;background:var(--acc)"></div></div>
+        <span class="rval">${pct}%</span>`;
+    }
+    el.appendChild(div);
+  });
+}
+
+function renderComboStats(bs){
+  renderCW('mc-top',bs,'my',true,5);
+  renderCW('mc-bot',bs,'my',false,5);
+  renderCW('oc-top',bs,'opp',true,5);
+  renderCW('oc-bot',bs,'opp',false,5);
+  renderCross(bs);
+}
+
+function renderCW(elId,bs,side,top,limit){
+  const stats={};
+  bs.forEach(b=>{
+    const lead=side==='my'?b.myLead:b.oppLead;
+    if(lead.length<2)return;
+    const key=lead.slice().sort().join('＋');
+    if(!stats[key])stats[key]={w:0,total:0};
+    stats[key].total++;
+    if(b.result==='win')stats[key].w++;
+  });
+  const sorted=Object.entries(stats).map(([k,v])=>({key:k,rate:v.w/v.total,w:v.w,total:v.total}))
+    .sort((a,b)=>top?b.rate-a.rate:a.rate-b.rate).slice(0,limit);
+  const el=document.getElementById(elId);
+  if(!sorted.length){el.innerHTML='<div class="empty">データなし</div>';return;}
+  el.innerHTML='';
+  sorted.forEach(item=>{
+    const pct=Math.round(item.rate*100);
+    const col=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--acc)';
+    const div=document.createElement('div');
+    div.className='crow';
+    const parts=item.key.split('＋');
+    let imgs='';
+    parts.forEach(n=>{ const p=findByName(n); imgs+=`<img src="${p?sprite(p.no):''}" loading="lazy" onerror="this.style.opacity=0">`; });
+    div.innerHTML=`<div class="ppair">${imgs}</div>
+      <span style="font-size:10px;flex:1;">${item.key}</span>
+      <div class="wbwrap"><div class="wb2" style="width:${pct}%;background:${col}"></div></div>
+      <span class="wval" style="color:${col}">${pct}% (${item.w}/${item.total})</span>`;
+    el.appendChild(div);
+  });
+}
+
+function renderCross(bs){
+  const mlc={},olc={};
+  bs.forEach(b=>{
+    if(b.myLead.length>=2){const k=b.myLead.slice().sort().join('＋');mlc[k]=(mlc[k]||0)+1;}
+    if(b.oppLead.length>=2){const k=b.oppLead.slice().sort().join('＋');olc[k]=(olc[k]||0)+1;}
+  });
+  const myTop=Object.entries(mlc).sort((a,b)=>b[1]-a[1]).slice(0,5).map(e=>e[0]);
+  const oppTop=Object.entries(olc).sort((a,b)=>b[1]-a[1]).slice(0,10).map(e=>e[0]);
+  const el=document.getElementById('cross');
+  if(!myTop.length||!oppTop.length){el.innerHTML='<div class="empty">データなし</div>';return;}
+  let h=`<table class="ctable"><thead><tr><th>自分＼相手</th>`;
+  oppTop.forEach(ok=>{ h+=`<th style="font-size:9px;">${ok.replace('＋','<br>')}</th>`; });
+  h+='</tr></thead><tbody>';
+  myTop.forEach(mk=>{
+    h+=`<tr><th style="font-size:9px;">${mk.replace('＋','<br>')}</th>`;
+    oppTop.forEach(ok=>{
+      const m=bs.filter(b=>b.myLead.slice().sort().join('＋')===mk&&b.oppLead.slice().sort().join('＋')===ok);
+      if(!m.length){h+='<td style="color:var(--text3)">-</td>';return;}
+      const w=m.filter(b=>b.result==='win').length;
+      const pct=Math.round(w/m.length*100);
+      const bg=pct>=60?'rgba(34,197,94,.15)':pct<=40?'rgba(239,68,68,.12)':'';
+      const c=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--text1)';
+      h+=`<td style="background:${bg};color:${c};font-weight:600">${pct}%<br><span style="font-size:8px;color:var(--text3)">${w}/${m.length}</span></td>`;
+    });
+    h+='</tr>';
+  });
+  el.innerHTML=h+'</tbody></table>';
+}
+
+function renderPokeWR(){
+  renderPWR('my-pwr',ST.battles,'my');
+  renderPWR('opp-pwr',ST.battles,'opp');
+}
+
+function renderPWR(elId,bs,side){
+  const stats={};
+  bs.forEach(b=>{
+    const pokes=side==='my'?[...b.myLead,...b.myBack]:[...b.oppLead,...b.oppBack];
+    pokes.forEach(name=>{
+      if(!stats[name])stats[name]={w:0,total:0};
+      stats[name].total++;
+      if(b.result==='win')stats[name].w++;
+    });
+  });
+  const sorted=Object.entries(stats).map(([k,v])=>({name:k,rate:v.w/v.total,w:v.w,total:v.total})).sort((a,b)=>b.rate-a.rate);
+  const el=document.getElementById(elId);
+  if(!sorted.length){el.innerHTML='<div class="empty">データなし</div>';return;}
+  el.innerHTML='';
+  sorted.forEach(item=>{
+    const p=findByName(item.name);
+    const pct=Math.round(item.rate*100);
+    const col=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--text1)';
+    const d=document.createElement('div');
+    d.className='pwrow';
+    d.innerHTML=`<img src="${p?sprite(p.no):''}" loading="lazy" onerror="this.style.opacity=0">
+      <div style="flex:1;">
+        <div style="font-size:11px;">${item.name}</div>
+        <div style="display:flex;gap:2px;margin-top:2px;">${p?typeBadge(p.type1)+typeBadge(p.type2):''}</div>
+      </div>
+      <div class="wbwrap" style="max-width:80px;"><div class="wb2" style="width:${pct}%;background:${col}"></div></div>
+      <span style="font-size:10px;color:${col};min-width:52px;text-align:right">${pct}% (${item.w}/${item.total})</span>`;
+    el.appendChild(d);
+  });
+}
+
+function renderHist(bs){
+  const el=document.getElementById('hist-list');
+  if(!bs.length){el.innerHTML='<div class="empty">対戦記録なし</div>';return;}
+  el.innerHTML='';
+  bs.slice(0,50).forEach(b=>{
+    const d=new Date(b.date);
+    const ds=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    let mi='',oi='';
+    [...b.myLead,...b.myBack].forEach(n=>{ const p=findByName(n); mi+=`<img src="${p?sprite(p.no):''}" style="width:22px;height:22px;object-fit:contain;image-rendering:pixelated" title="${n}" loading="lazy" onerror="this.style.opacity=0">`; });
+    [...b.oppLead,...b.oppBack].forEach(n=>{ const p=findByName(n); oi+=`<img src="${p?sprite(p.no):''}" style="width:22px;height:22px;object-fit:contain;image-rendering:pixelated" title="${n}" loading="lazy" onerror="this.style.opacity=0">`; });
+    const row=document.createElement('div');
+    row.className='hrow';
+    row.innerHTML=`<span style="font-size:9px;color:var(--text3);min-width:48px">${ds}</span>
+      <span class="badge ${b.result==='win'?'bw':'bl'}">${b.result==='win'?'勝':'負'}</span>
+      <span style="font-size:9px;color:var(--text3)">${b.partyName||''}</span>
+      <div style="display:flex;gap:1px">${mi}</div>
+      <span style="font-size:9px;color:var(--text3)">vs</span>
+      <div style="display:flex;gap:1px">${oi}</div>`;
+    el.appendChild(row);
+  });
+}
+
+function showStatTab(tab,btn){
+  ['rate','combo','wr','hist'].forEach(t=>{ document.getElementById('st-'+t).style.display=t===tab?'block':'none'; });
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ===== SETTINGS =====
+function loadSettings(){
+  document.getElementById('n-token').value=ST.notionToken||'';
+  document.getElementById('n-db').value=ST.notionDb||'';
+  updateNbar();
+}
+function saveSettings(){ ST.notionToken=document.getElementById('n-token').value.trim(); ST.notionDb=document.getElementById('n-db').value.trim(); sv(); updateNbar(); }
+function updateNbar(){ const el=document.getElementById('nbar'); if(ST.notionToken&&ST.notionDb){el.className='nbar nok';el.textContent='設定済み（記録時に自動同期）';}else{el.className='nbar nidle';el.textContent='未設定';} }
+async function testNotion(){
+  saveSettings(); const el=document.getElementById('nbar'); el.className='nbar nidle'; el.textContent='テスト中...';
+  try{
+    const r=await fetch(`https://api.notion.com/v1/databases/${ST.notionDb}`,{headers:{'Authorization':'Bearer '+ST.notionToken,'Notion-Version':'2022-06-28'}});
+    if(r.ok){el.className='nbar nok';el.textContent='接続成功！';}else{el.className='nbar nng';el.textContent='接続失敗（Token/DB IDを確認）';}
+  }catch{el.className='nbar nng';el.textContent='ネットワークエラー';}
+}
+async function syncNotion(b){
+  try{
+    await fetch('https://api.notion.com/v1/pages',{method:'POST',headers:{'Authorization':'Bearer '+ST.notionToken,'Notion-Version':'2022-06-28','Content-Type':'application/json'},
+    body:JSON.stringify({parent:{database_id:ST.notionDb},properties:{
+      '日時':{date:{start:b.date}},'勝敗':{select:{name:b.result==='win'?'勝ち':'負け'}},
+      '自分先発1':{title:[{text:{content:b.myLead[0]||''}}]},
+      '自分先発2':{rich_text:[{text:{content:b.myLead[1]||''}}]},
+      '自分後発1':{rich_text:[{text:{content:b.myBack[0]||''}}]},
+      '自分後発2':{rich_text:[{text:{content:b.myBack[1]||''}}]},
+      '相手先発1':{rich_text:[{text:{content:b.oppLead[0]||''}}]},
+      '相手先発2':{rich_text:[{text:{content:b.oppLead[1]||''}}]},
+      '相手後発1':{rich_text:[{text:{content:b.oppBack[0]||''}}]},
+      '相手後発2':{rich_text:[{text:{content:b.oppBack[1]||''}}]},
+      '相手パーティ':{rich_text:[{text:{content:b.oppParty.join(', ')}}]},
+      'パーティ名':{rich_text:[{text:{content:b.partyName||''}}]}
+    }})});
+  }catch(e){console.warn('Notion sync failed',e);}
+}
+function exportData(){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(ST,null,2)],{type:'application/json'})); a.download='battle_data.json'; a.click(); }
+function clearData(){ if(!confirm('全対戦データを削除しますか？'))return; ST.battles=[]; sv(); renderStats(); alert('削除しました'); }
+
+// ===== INIT =====
+renderPartyTabs();
+renderPartySlots();
+</script>
+</body>
+</html>
