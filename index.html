@@ -282,6 +282,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
   <div class="card">
     <div class="ct">Notion連携</div>
     <div id="nbar" class="nbar idle">未設定</div>
+    <label class="slbl">Proxy URL（Cloudflare Worker）</label>
+    <input type="text" class="sinput" id="nproxy" placeholder="https://notion-proxy.xxx.workers.dev" oninput="saveSet()" autocomplete="off">
     <label class="slbl">Integration Token</label>
     <input type="password" class="sinput" id="ntoken" placeholder="secret_..." oninput="saveSet()">
     <label class="slbl">データベース ID</label>
