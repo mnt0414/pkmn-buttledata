@@ -321,6 +321,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
 </div>
 
 <script>
+// ===== NOTION PROXY =====
+// Cloudflare WorkerのURLをここに設定（末尾スラッシュなし）
+// 例: https://notion-proxy.YOUR-NAME.workers.dev
+// 設定方法: worker.js をCloudflare Workersにデプロイし、そのURLを貼る
+const NOTION_PROXY = localStorage.getItem('notion_proxy_url') || '';
+
 // ===== CSV LOADER =====
 // pokemon_list.csv format:
 //   no,name,type1,type2,sprite_override,sprite_url,yakkun_url
@@ -733,16 +739,16 @@ function gp(p,btn){
 }
 
 // ===== SETTINGS =====
-function loadSet(){document.getElementById('ntoken').value=S.notionToken||'';document.getElementById('ndb').value=S.notionDb||'';updateNBar()}
-function saveSet(){S.notionToken=document.getElementById('ntoken').value.trim();S.notionDb=document.getElementById('ndb').value.trim();save();updateNBar()}
+function loadSet(){document.getElementById('ntoken').value=S.notionToken||'';document.getElementById('ndb').value=S.notionDb||'';document.getElementById('nproxy').value=localStorage.getItem('notion_proxy_url')||'';updateNBar()}
+function saveSet(){S.notionToken=document.getElementById('ntoken').value.trim();S.notionDb=document.getElementById('ndb').value.trim();const pv=document.getElementById('nproxy').value.trim();pv?localStorage.setItem('notion_proxy_url',pv):localStorage.removeItem('notion_proxy_url');save();updateNBar()}
 function updateNBar(){const el=document.getElementById('nbar');if(S.notionToken&&S.notionDb){el.className='nbar ok';el.textContent='設定済み（自動同期）'}else{el.className='nbar idle';el.textContent='未設定'}}
 async function testNotion(){
   saveSet();const el=document.getElementById('nbar');el.className='nbar idle';el.textContent='テスト中...';
-  try{const r=await fetch(`https://api.notion.com/v1/databases/${S.notionDb}`,{headers:{'Authorization':'Bearer '+S.notionToken,'Notion-Version':'2022-06-28'}});
+  try{const r=await fetch(`${NOTION_PROXY||"https://api.notion.com"}/v1/databases/${S.notionDb}`,{headers:{'Authorization':'Bearer '+S.notionToken,'Notion-Version':'2022-06-28'}});
   if(r.ok){el.className='nbar ok';el.textContent='接続成功！'}else{el.className='nbar ng';el.textContent='接続失敗（Token/DB IDを確認）'}}catch{el.className='nbar ng';el.textContent='ネットワークエラー'}
 }
 async function syncNotion(b){
-  try{await fetch('https://api.notion.com/v1/pages',{method:'POST',headers:{'Authorization':'Bearer '+S.notionToken,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({parent:{database_id:S.notionDb},properties:{'日時':{date:{start:b.date}},'勝敗':{select:{name:b.result==='win'?'勝ち':'負け'}},'自分先発1':{title:[{text:{content:b.myLead[0]||''}}]},'自分先発2':{rich_text:[{text:{content:b.myLead[1]||''}}]},'自分後発1':{rich_text:[{text:{content:b.myBack[0]||''}}]},'自分後発2':{rich_text:[{text:{content:b.myBack[1]||''}}]},'相手先発1':{rich_text:[{text:{content:b.oppLead[0]||''}}]},'相手先発2':{rich_text:[{text:{content:b.oppLead[1]||''}}]},'相手後発1':{rich_text:[{text:{content:b.oppBack[0]||''}}]},'相手後発2':{rich_text:[{text:{content:b.oppBack[1]||''}}]},'相手パーティ':{rich_text:[{text:{content:b.oppParty.join(', ')}}]},'パーティ名':{rich_text:[{text:{content:b.partyName||''}}]}}})})}catch(e){console.warn('Notion sync failed',e)}}
+  try{await fetch(`${NOTION_PROXY||'https://api.notion.com'}/v1/pages`,{method:'POST',headers:{'Authorization':'Bearer '+S.notionToken,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({parent:{database_id:S.notionDb},properties:{'日時':{date:{start:b.date}},'勝敗':{select:{name:b.result==='win'?'勝ち':'負け'}},'自分先発1':{title:[{text:{content:b.myLead[0]||''}}]},'自分先発2':{rich_text:[{text:{content:b.myLead[1]||''}}]},'自分後発1':{rich_text:[{text:{content:b.myBack[0]||''}}]},'自分後発2':{rich_text:[{text:{content:b.myBack[1]||''}}]},'相手先発1':{rich_text:[{text:{content:b.oppLead[0]||''}}]},'相手先発2':{rich_text:[{text:{content:b.oppLead[1]||''}}]},'相手後発1':{rich_text:[{text:{content:b.oppBack[0]||''}}]},'相手後発2':{rich_text:[{text:{content:b.oppBack[1]||''}}]},'相手パーティ':{rich_text:[{text:{content:b.oppParty.join(', ')}}]},'パーティ名':{rich_text:[{text:{content:b.partyName||''}}]}}})})}catch(e){console.warn('Notion sync failed',e)}}
 function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='battle_data.json';a.click()}
 function clearData(){if(!confirm('対戦データを全削除しますか？'))return;S.battles=[];save();renderStats();alert('削除しました')}
 
