@@ -280,24 +280,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
 <!-- SETTINGS -->
 <div id="page-settings" class="page">
   <div class="card">
-    <div class="ct">Notion連携</div>
+    <div class="ct">クラウド同期（Google スプレッドシート）</div>
     <div id="nbar" class="nbar idle">未設定</div>
-    <label class="slbl">Proxy URL（Cloudflare Worker）</label>
-    <input type="text" class="sinput" id="nproxy" placeholder="https://notion-proxy.xxx.workers.dev" oninput="saveSet()" autocomplete="off">
-    <label class="slbl">Integration Token</label>
-    <input type="password" class="sinput" id="ntoken" placeholder="secret_..." oninput="saveSet()">
-    <label class="slbl">データベース ID</label>
-    <input type="text" class="sinput" id="ndb" placeholder="32文字のID" oninput="saveSet()">
-    <div class="brow"><button class="btn p" onclick="testNotion()">接続テスト</button></div>
+    <label class="slbl">Apps Script URL</label>
+    <input type="text" class="sinput" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" oninput="saveSet()" autocomplete="off">
+    <div class="brow">
+      <button class="btn p" onclick="testGAS()">接続テスト</button>
+      <button class="btn" onclick="pullGAS()">↓ クラウドから取得</button>
+      <button class="btn" onclick="pushGAS()">↑ クラウドへ保存</button>
+    </div>
     <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.8">
-      DB列：日時(Date)、勝敗(Select)、自分先発1、自分先発2、自分後発1、自分後発2、相手先発1、相手先発2、相手後発1、相手後発2、相手パーティ(Text)、パーティ名(Text)
+      設定方法：google_apps_script.gs の内容をApps Scriptにデプロイし、発行されたURLを上に貼り付けてください
     </div>
   </div>
   <div class="card">
     <div class="ct">データ管理</div>
     <div class="brow">
       <button class="btn" onclick="exportData()">JSONエクスポート</button>
+      <button class="btn" onclick="importData()">JSONインポート</button>
       <button class="btn d" onclick="clearData()">対戦データ全削除</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
     </div>
   </div>
 </div>
@@ -323,12 +325,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
 </div>
 
 <script>
-// ===== NOTION PROXY =====
-// Cloudflare WorkerのURLをここに設定（末尾スラッシュなし）
-// 例: https://notion-proxy.YOUR-NAME.workers.dev
-// 設定方法: worker.js をCloudflare Workersにデプロイし、そのURLを貼る
-const NOTION_PROXY = localStorage.getItem('notion_proxy_url') || '';
-
 // ===== CSV LOADER =====
 // pokemon_list.csv format:
 //   no,name,type1,type2,sprite_override,sprite_url,yakkun_url
@@ -416,10 +412,10 @@ function imgUrl(name_en){
 let S = (()=>{try{return JSON.parse(localStorage.getItem('pb3')||'null')}catch{return null}})() || {
   parties:[{id:'p1',name:'パーティ1',pokemon:[]}],
   activeParty:'p1',
-  battles:[],
-  notionToken:'',
-  notionDb:''
+  battles:[]
 };
+// GAS URLはlocalStorageに別管理（エクスポートに含めない）
+function getGasUrl(){return localStorage.getItem('gas_url')||''}
 function save(){localStorage.setItem('pb3',JSON.stringify(S))}
 function getAP(){return S.parties.find(p=>p.id===S.activeParty)||S.parties[0]}
 
@@ -608,7 +604,7 @@ function saveBattle(){
   const p=getAP();
   const b={id:Date.now(),date:new Date().toISOString(),partyId:p.id,partyName:p.name,result:battleRes,myLead:[...mySel.lead],myBack:[...mySel.back],oppLead:[...oppSel.lead],oppBack:[...oppSel.back],oppParty:[...oppParty.filter(Boolean)]};
   S.battles.unshift(b);save();
-  if(S.notionToken&&S.notionDb)syncNotion(b);
+  if(getGasUrl())pushGAS(true);
   alert('記録しました！');resetBattle();
 }
 function resetBattle(){oppParty=[];mySel={lead:[],back:[]};oppSel={lead:[],back:[]};battleRes=null;renderOppSlots();goStep(1)}
@@ -741,16 +737,67 @@ function gp(p,btn){
 }
 
 // ===== SETTINGS =====
-function loadSet(){document.getElementById('ntoken').value=S.notionToken||'';document.getElementById('ndb').value=S.notionDb||'';document.getElementById('nproxy').value=localStorage.getItem('notion_proxy_url')||'';updateNBar()}
-function saveSet(){S.notionToken=document.getElementById('ntoken').value.trim();S.notionDb=document.getElementById('ndb').value.trim();const pv=document.getElementById('nproxy').value.trim();pv?localStorage.setItem('notion_proxy_url',pv):localStorage.removeItem('notion_proxy_url');save();updateNBar()}
-function updateNBar(){const el=document.getElementById('nbar');if(S.notionToken&&S.notionDb){el.className='nbar ok';el.textContent='設定済み（自動同期）'}else{el.className='nbar idle';el.textContent='未設定'}}
-async function testNotion(){
-  saveSet();const el=document.getElementById('nbar');el.className='nbar idle';el.textContent='テスト中...';
-  try{const r=await fetch(`${NOTION_PROXY||"https://api.notion.com"}/v1/databases/${S.notionDb}`,{headers:{'Authorization':'Bearer '+S.notionToken,'Notion-Version':'2022-06-28'}});
-  if(r.ok){el.className='nbar ok';el.textContent='接続成功！'}else{el.className='nbar ng';el.textContent='接続失敗（Token/DB IDを確認）'}}catch{el.className='nbar ng';el.textContent='ネットワークエラー'}
+function loadSet(){
+  const u=getGasUrl();
+  document.getElementById('gas-url').value=u;
+  updateNBar();
 }
-async function syncNotion(b){
-  try{await fetch(`${NOTION_PROXY||'https://api.notion.com'}/v1/pages`,{method:'POST',headers:{'Authorization':'Bearer '+S.notionToken,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({parent:{database_id:S.notionDb},properties:{'日時':{date:{start:b.date}},'勝敗':{select:{name:b.result==='win'?'勝ち':'負け'}},'自分先発1':{title:[{text:{content:b.myLead[0]||''}}]},'自分先発2':{rich_text:[{text:{content:b.myLead[1]||''}}]},'自分後発1':{rich_text:[{text:{content:b.myBack[0]||''}}]},'自分後発2':{rich_text:[{text:{content:b.myBack[1]||''}}]},'相手先発1':{rich_text:[{text:{content:b.oppLead[0]||''}}]},'相手先発2':{rich_text:[{text:{content:b.oppLead[1]||''}}]},'相手後発1':{rich_text:[{text:{content:b.oppBack[0]||''}}]},'相手後発2':{rich_text:[{text:{content:b.oppBack[1]||''}}]},'相手パーティ':{rich_text:[{text:{content:b.oppParty.join(', ')}}]},'パーティ名':{rich_text:[{text:{content:b.partyName||''}}]}}})})}catch(e){console.warn('Notion sync failed',e)}}
+function saveSet(){
+  const u=document.getElementById('gas-url').value.trim();
+  u?localStorage.setItem('gas_url',u):localStorage.removeItem('gas_url');
+  save();updateNBar();
+}
+function updateNBar(){
+  const el=document.getElementById('nbar');
+  if(getGasUrl()){el.className='nbar ok';el.textContent='設定済み（自動同期）'}
+  else{el.className='nbar idle';el.textContent='未設定'}
+}
+async function testGAS(){
+  const url=getGasUrl();
+  if(!url){alert('Apps Script URLを入力してください');return}
+  const el=document.getElementById('nbar');el.className='nbar idle';el.textContent='テスト中...';
+  try{
+    const r=await fetch(url+'?action=ping');
+    const j=await r.json();
+    if(j.ok){el.className='nbar ok';el.textContent='接続成功！'}
+    else{el.className='nbar ng';el.textContent='接続失敗：'+j.error}
+  }catch(e){el.className='nbar ng';el.textContent='ネットワークエラー'}
+}
+async function pushGAS(silent=false){
+  const url=getGasUrl();if(!url)return;
+  try{
+    const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'push',data:S})});
+    const j=await r.json();
+    if(!silent){j.ok?alert('クラウドに保存しました'):alert('失敗：'+j.error)}
+  }catch(e){if(!silent)alert('ネットワークエラー')}
+}
+async function pullGAS(){
+  const url=getGasUrl();if(!url){alert('Apps Script URLを設定してください');return}
+  if(!confirm('クラウドのデータで上書きしますか？（ローカルの変更は失われます）'))return;
+  try{
+    const r=await fetch(url+'?action=pull');
+    const j=await r.json();
+    if(j.ok&&j.data){S=j.data;save();renderPTabs();renderPartySlots();renderStats();alert('取得しました')}
+    else alert('失敗：'+(j.error||'データなし'))
+  }catch(e){alert('ネットワークエラー')}
+}
+function importData(){document.getElementById('import-file').click()}
+function handleImport(e){
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!d.battles)throw new Error('形式エラー');
+      if(!confirm(`${d.battles.length}件の対戦データをインポートします（現在のデータに追加）`))return;
+      const ids=new Set(S.battles.map(b=>b.id));
+      d.battles.forEach(b=>{if(!ids.has(b.id))S.battles.push(b)});
+      S.battles.sort((a,b)=>b.id-a.id);
+      save();renderStats();alert('インポート完了');
+    }catch(ex){alert('読み込み失敗：'+ex.message)}
+  };
+  rd.readAsText(f);e.target.value='';
+}
 function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='battle_data.json';a.click()}
 function clearData(){if(!confirm('対戦データを全削除しますか？'))return;S.battles=[];save();renderStats();alert('削除しました')}
 
