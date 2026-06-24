@@ -315,6 +315,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
 .cres-ko{color:var(--text2);font-weight:600}
 .cres-note{font-size:9px;color:var(--text3);margin-top:3px;line-height:1.5}
 .cres.err{color:var(--loss);font-size:11px;padding:6px 0}
+.cdir{font-size:12px;font-weight:700;color:var(--text2);margin:14px 2px 7px;display:flex;align-items:center;gap:7px}
+.cdir:first-child{margin-top:2px}
 </style>
 <div id="page-calc" class="page">
   <div class="card" id="calc-atk" data-role="atk-card"></div>
@@ -398,6 +400,15 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
       <button class="btn p" style="flex:1;justify-content:center" onclick="saveBuild()">保存</button>
       <button class="btn" style="flex:1;justify-content:center" onclick="closeBuildEditor()">キャンセル</button>
     </div>
+  </div>
+</div>
+
+<!-- PARTY PICKER MODAL (計算機へ育成データ呼び出し F2) -->
+<div id="party-pick-modal" style="display:none" class="moverlay" onclick="if(event.target===this)closePartyPick()">
+  <div class="modal">
+    <h3 id="pp-title">パーティから選ぶ</h3>
+    <div class="mlist" id="pp-body" style="flex:1"><div class="mloading">読み込み中...</div></div>
+    <button class="mclose" onclick="closePartyPick()">キャンセル</button>
   </div>
 </div>
 
@@ -927,6 +938,8 @@ function computeChampStats(base, pts, natureJa){
 // R1: inject final stats as overrides.baseStats with neutral nature/IV31/EV0 (non-HP -20, HP -75)
 function injBase(f){return {hp:f.hp-75,atk:f.atk-20,def:f.def-20,spa:f.spa-20,spd:f.spd-20,spe:f.spe-20}}
 
+// チャンピオンズ新特性のうちエンジン標準特性で代替できる防御/無効系（倍率系はpost-calcなので含めない）
+const CHAMP_ABIL_ENGINE={'うなぎのぼり':'Levitate'}; // ふゆう成分=じめん無効。ビーストブースト/フィールド無効は単発ダメージに無関係
 function buildSide(inp){
   const G=window.SMOGON, gen=CALC.gen, notes=[];
   let speciesEng=CALC.dict.pokemon[inp.species], baseStats=null, typesOverride=null, abilityEng;
@@ -940,7 +953,7 @@ function buildSide(inp){
   }else{
     const sp=gen.species.get(G.toID(speciesEng));
     if(sp&&sp.baseStats){baseStats={};SK.forEach(s=>baseStats[s]=sp.baseStats[s])}
-    abilityEng=inp.ability?CALC.dict.abilities[inp.ability]:undefined; // champions-only abilities -> undefined (handled post-calc)
+    abilityEng=inp.ability?(CALC.dict.abilities[inp.ability]||CHAMP_ABIL_ENGINE[inp.ability]):undefined; // 倍率系はpost-calc(undefined)、無効/防御系はengine特性へ対応
   }
   if(!baseStats) return {error:'種族値取得失敗: '+inp.species};
   const finalStats=computeChampStats(baseStats,inp.points,inp.nature);
@@ -990,6 +1003,43 @@ function simpleKO(min,max,hp){
   const g=Math.ceil(hp/min), b=Math.ceil(hp/max);
   return g===b?'確定'+g+'発':'乱数'+b+'〜'+g+'発';
 }
+// res.damage（16段乱数）を取り出し post-mult を適用
+function getRolls(res,mult){
+  let d=res.damage; if(typeof d==='number')d=[d];
+  if(Array.isArray(d)&&Array.isArray(d[0]))d=d[0];
+  return (d||[]).map(x=>mult!==1?Math.floor(x*mult):x);
+}
+// 1ロールあたりのKO発数（HP半分以下で1回だけきのみ回復）
+function hitsToKO(perHit,hp,heal){
+  if(perHit<=0)return 99;
+  let cur=hp,hits=0,used=false;
+  while(cur>0&&hits<20){
+    cur-=perHit; hits++;
+    if(cur<=0)break;
+    if(heal&&!used&&cur<=Math.floor(hp/2)){cur=Math.min(hp,cur+heal);used=true}
+  }
+  return hits;
+}
+function berryKO(rolls,hp,heal){
+  if(!rolls.length)return'';
+  const best=hitsToKO(Math.max(...rolls),hp,heal), worst=hitsToKO(Math.min(...rolls),hp,heal);
+  return best===worst?'確定'+best+'発':best+'〜'+worst+'発';
+}
+// 残飯/くろいヘドロ・残留ダメージ(engine kochance)＋きのみ(自前)の確定数注記。なければ''
+function koResidualNote(res,defHP,dItem,mult){
+  const out=[];
+  if(mult===1){
+    let ko=null; try{ko=res.kochance()}catch(e){}
+    if(ko&&ko.n&&/recovery|residual/i.test(ko.text||''))
+      out.push('残飯/残留込み '+(ko.chance>=1?'確定'+ko.n+'発':ko.n+'発'+(ko.chance*100).toFixed(1)+'%'));
+  }
+  if(dItem==='オボンのみ'||dItem==='オレンのみ'){
+    const heal=dItem==='オボンのみ'?Math.floor(defHP/4):10;
+    const n=berryKO(getRolls(res,mult),defHP,heal);
+    if(n)out.push((dItem==='オボンのみ'?'オボン':'オレン')+'込み '+n);
+  }
+  return out.join(' / ');
+}
 function calcOnce(a,d,moveJa,f){
   const G=window.SMOGON;
   const A=buildSide(a); if(A.error)return{error:A.error};
@@ -1002,8 +1052,9 @@ function calcOnce(a,d,moveJa,f){
   let engineDesc=''; try{engineDesc=res.desc()}catch(e){}
   const mult=pm.mult||1;
   if(mult!==1){min=Math.floor(min*mult);max=Math.floor(max*mult)}
-  const koText=simpleKO(min,max,defHP);
-  return {ok:true,moveJa,minDmg:min,maxDmg:max,defHP,minPct:pct(min,defHP),maxPct:pct(max,defHP),koText,engineDesc,notes:[...A.notes,...D.notes,...pm.notes]};
+  const koText=max<=0?'効果なし':simpleKO(min,max,defHP);
+  const koNote=max<=0?'':koResidualNote(res,defHP,d.item,mult);
+  return {ok:true,moveJa,minDmg:min,maxDmg:max,defHP,minPct:pct(min,defHP),maxPct:pct(max,defHP),koText,koNote,engineDesc,notes:[...A.notes,...D.notes,...pm.notes]};
 }
 
 // ----- CALC UI -----
@@ -1014,6 +1065,7 @@ function sideCardHtml(pre,label,withMoves){
   return `<div class="ct">${label}</div>
   <div class="brow" style="align-items:center;margin-bottom:10px">
     <button class="btn" id="${pre}-poke-btn" data-role="${pre}-poke" style="min-width:130px;justify-content:center">＋ ポケモン選択</button>
+    <button class="btn" id="${pre}-party-btn" data-role="${pre}-party" style="font-size:11px">パーティから</button>
     <select id="${pre}-mega" class="cinput" style="display:none;max-width:170px"></select>
   </div>
   <div class="cpts">
@@ -1035,9 +1087,11 @@ function sideCardHtml(pre,label,withMoves){
 }
 function buildCalcUI(){
   document.getElementById('calc-atk').innerHTML=sideCardHtml('atk','攻撃側',true);
-  document.getElementById('calc-def').innerHTML=sideCardHtml('def','防御側',false);
+  document.getElementById('calc-def').innerHTML=sideCardHtml('def','防御側',true);
   document.getElementById('atk-poke-btn').onclick=()=>pickCalcPoke('atk');
   document.getElementById('def-poke-btn').onclick=()=>pickCalcPoke('def');
+  document.getElementById('atk-party-btn').onclick=()=>pickFromParty('atk');
+  document.getElementById('def-party-btn').onclick=()=>pickFromParty('def');
   document.getElementById('atk-pts-max').onclick=()=>setBuppa('atk');
   document.getElementById('def-pts-max').onclick=()=>setBuppa('def');
   document.getElementById('atk-mega').onchange=e=>{calcState.atk.mega=e.target.value;recalc()};
@@ -1103,26 +1157,33 @@ function readSide(pre){
 }
 function readField(){return {gameType:cval('cf-gametype'),weather:cval('cf-weather'),terrain:cval('cf-terrain'),
   reflect:cchk('cf-reflect'),lightScreen:cchk('cf-lightscreen'),helpingHand:cchk('cf-hh'),crit:cchk('cf-crit')}}
+function resCardHtml(r,mj){
+  if(r.error)return `<div class="cres err">${mj}: ${r.error}</div>`;
+  const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text1)';
+  return `<div class="cres">
+    <div class="cres-h"><span class="cres-mv">${mj}</span><span class="cres-dmg">${r.minDmg}〜${r.maxDmg}</span></div>
+    <div class="cres-bar"><div class="cres-fill" style="width:${Math.min(100,r.maxPct)}%;background:${col}"></div></div>
+    <div class="cres-meta"><span style="color:${col}">${r.minPct}〜${r.maxPct}%（HP${r.defHP}）</span><span class="cres-ko">${r.koText}</span></div>
+    ${r.koNote?`<div class="cres-note" style="color:var(--accent)">${r.koNote}</div>`:''}
+    ${r.notes.length?`<div class="cres-note">${r.notes.join(' / ')}</div>`:''}
+  </div>`;
+}
+function dirSection(att,def,moves,f){
+  if(!moves.length)return '';
+  const an=(getPoke(att.species)||[])[1]||att.species, dn=(getPoke(def.species)||[])[1]||def.species;
+  let h=`<div class="cdir">${an} <span style="opacity:.55">→</span> ${dn}</div>`;
+  moves.forEach(mj=>{ h+=resCardHtml(calcOnce(att,def,mj,f),mj); });
+  return h;
+}
 function recalc(){
   const el=document.getElementById('calc-result'); if(!el)return;
   if(!CALC.ready){el.innerHTML='<div class="empty">計算エンジンを読み込み中...</div>';return}
   const a=readSide('atk'), d=readSide('def'), f=readField();
   if(!a.species||!d.species){el.innerHTML='<div class="empty">攻撃側・防御側のポケモンを選択してください</div>';return}
-  const moves=[0,1,2,3].map(i=>cval('atk-move-'+i).trim()).filter(Boolean);
-  if(!moves.length){el.innerHTML='<div class="empty">攻撃側の技を入力してください</div>';return}
-  let html='';
-  moves.forEach(mj=>{
-    const r=calcOnce(a,d,mj,f);
-    if(r.error){html+=`<div class="cres err">${mj}: ${r.error}</div>`;return}
-    const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text1)';
-    html+=`<div class="cres">
-      <div class="cres-h"><span class="cres-mv">${mj}</span><span class="cres-dmg">${r.minDmg}〜${r.maxDmg}</span></div>
-      <div class="cres-bar"><div class="cres-fill" style="width:${Math.min(100,r.maxPct)}%;background:${col}"></div></div>
-      <div class="cres-meta"><span style="color:${col}">${r.minPct}〜${r.maxPct}%（HP${r.defHP}）</span><span class="cres-ko">${r.koText}</span></div>
-      ${r.notes.length?`<div class="cres-note">${r.notes.join(' / ')}</div>`:''}
-    </div>`;
-  });
-  el.innerHTML=html;
+  const am=[0,1,2,3].map(i=>cval('atk-move-'+i).trim()).filter(Boolean);
+  const dm=[0,1,2,3].map(i=>cval('def-move-'+i).trim()).filter(Boolean);
+  if(!am.length&&!dm.length){el.innerHTML='<div class="empty">どちらかのポケモンの技を入力してください</div>';return}
+  el.innerHTML=dirSection(a,d,am,f)+dirSection(d,a,dm,f);
 }
 async function loadCalcDicts(){
   if(CALC.dict)return;
@@ -1153,6 +1214,54 @@ async function initCalc(){
 function openCalc(){
   if(!CALC.built){buildCalcUI();CALC.built=true}
   initCalc();
+}
+
+// ===== 自パーティ呼び出し(F2): 計算機の攻守枠へ育成データを流し込む =====
+let ppPre=null;
+function pickFromParty(pre){
+  ppPre=pre;
+  const body=document.getElementById('pp-body');
+  const rows=[];
+  (S.parties||[]).forEach(p=>(p.pokemon||[]).forEach(x=>{ if(pname(x))rows.push({party:p.name,it:pbuild(x)}); }));
+  document.getElementById('pp-title').textContent=(pre==='atk'?'攻撃':'防御')+'側 — パーティから選ぶ';
+  if(!rows.length){ body.innerHTML='<div class="mloading">パーティにポケモンが登録されていません</div>'; }
+  else{
+    body.innerHTML='';
+    rows.forEach(({party,it})=>{
+      const r=getPoke(it.name)||{};
+      const div=document.createElement('div');
+      div.className='mitem';
+      const badge=hasBuild(it)?'<span style="color:var(--accent2);font-size:9px">● 育成済</span>':'<span style="color:var(--text3);font-size:9px">未設定→ぶっぱ</span>';
+      div.innerHTML=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy">
+        <div class="mitem-info">
+          <div class="mitem-name">${r[1]||it.name} ${badge}</div>
+          <div class="mitem-types" style="color:var(--text3);font-size:9px">${esc(party)}</div>
+        </div>`;
+      div.onclick=()=>{ const it2=it; applyBuildToSide(ppPre,it2); closePartyPick(); };
+      body.appendChild(div);
+    });
+  }
+  document.getElementById('party-pick-modal').style.display='flex';
+}
+function closePartyPick(){ document.getElementById('party-pick-modal').style.display='none'; ppPre=null; }
+async function applyBuildToSide(pre,it){
+  try{ await loadCalcDicts(); }catch(e){ alert('辞書の読み込みに失敗しました（'+e.message+'）'); return; }
+  if(!document.getElementById(pre+'-nature').options.length)populateCalcLists();
+  calcState[pre].species=it.name; calcState[pre].mega='';
+  updateCalcPokeBtn(pre); updateMegaSelect(pre);
+  const buppa=pre==='atk'?{H:2,A:32,B:0,C:0,D:0,S:32}:{H:2,A:0,B:32,C:0,D:32,S:0}; // setBuppaと同値
+  const hasPts=it.points&&HK.some(k=>(it.points[k]||0)>0);
+  const pts=hasPts?it.points:buppa;
+  HK.forEach(k=>{const e=document.getElementById(`${pre}-pt-${k}`);if(e)e.value=clampInt(pts[k],0,32)});
+  const setV=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v};
+  setV(`${pre}-nature`,it.nature||'まじめ');
+  setV(`${pre}-ability`,it.ability||'');
+  setV(`${pre}-item`,it.item||'');
+  setV(`${pre}-tera`,it.tera||'');
+  const teraOn=document.getElementById(`${pre}-tera-on`); if(teraOn)teraOn.checked=false;
+  {const mv=it.moves||[];[0,1,2,3].forEach(j=>setV(pre+'-move-'+j,mv[j]||''))}
+  console.log('[calc] party→'+pre+': '+it.name+(hasPts?' 育成データ':' ぶっぱ既定'));
+  updateTot(pre); recalc();
 }
 
 // ===== 育成データエディタ(F3) =====
