@@ -34,6 +34,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
 .pslot .snum{position:absolute;top:3px;left:5px;font-size:9px;color:var(--text3);font-weight:600}
 .pslot .rx{position:absolute;top:2px;right:4px;background:var(--bg3);border:none;color:var(--text3);font-size:11px;cursor:pointer;width:15px;height:15px;display:flex;align-items:center;justify-content:center;border-radius:50%}
 .pslot .rx:hover{color:var(--loss)}
+.pslot .bdot{position:absolute;bottom:4px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 0 1px var(--bg2)}
 /* TYPE */
 .tbadge{display:inline-block;font-size:8px;font-weight:600;padding:1px 4px;border-radius:3px;text-transform:uppercase}
 /* MODAL */
@@ -165,6 +166,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
   <button class="nav-btn" onclick="gp('stats',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M7 16V10M12 16V4M17 16v-6"/></svg>データ
   </button>
+  <button class="nav-btn" onclick="gp('calc',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 10h2M12 10h2M16 10h0M8 14h2M12 14h2M16 14h0M8 18h2M12 18h2"/></svg>計算
+  </button>
   <button class="nav-btn" onclick="gp('settings',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定
   </button>
@@ -277,6 +281,67 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
   </div>
 </div>
 
+<!-- CALC -->
+<style>
+.cinput{padding:7px 9px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:12px;outline:none;width:100%}
+.cinput:focus{border-color:var(--accent)}
+.cpts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cpt{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;color:var(--text3)}
+.cnum{width:42px;padding:5px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:13px;text-align:center;outline:none}
+.cnum:focus{border-color:var(--accent)}
+.ctot{font-size:10px;color:var(--text2);margin-left:auto}
+.ctot.over{color:var(--loss);font-weight:600}
+.cgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+@media(max-width:480px){.cgrid2{grid-template-columns:1fr}}
+.cf{display:flex;flex-direction:column;gap:3px}
+.cranks{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px}
+.crk{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;color:var(--text3)}
+.crksel{padding:4px;text-align:center}
+.cmoves{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.cmoves .slbl{grid-column:1/-1}
+.cfield{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:480px){.cfield{grid-template-columns:1fr 1fr}}
+.cfield label{display:flex;flex-direction:column;gap:3px}
+.cchecks{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--text2)}
+.cchecks label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.cres{padding:9px 0;border-bottom:1px solid var(--border)}
+.cres:last-child{border-bottom:none}
+.cres-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.cres-mv{font-size:12px;font-weight:600}
+.cres-dmg{font-size:14px;font-weight:700}
+.cres-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.cres-fill{height:100%;border-radius:3px;transition:width .3s}
+.cres-meta{display:flex;justify-content:space-between;font-size:11px;margin-top:4px}
+.cres-ko{color:var(--text2);font-weight:600}
+.cres-note{font-size:9px;color:var(--text3);margin-top:3px;line-height:1.5}
+.cres.err{color:var(--loss);font-size:11px;padding:6px 0}
+</style>
+<div id="page-calc" class="page">
+  <div class="card" id="calc-atk" data-role="atk-card"></div>
+  <div class="card" id="calc-def" data-role="def-card"></div>
+  <div class="card" id="calc-field">
+    <div class="ct">場の条件</div>
+    <div class="cfield">
+      <label><span class="slbl">ルール</span><select id="cf-gametype" class="cinput"><option value="Doubles">ダブル</option><option value="Singles">シングル</option></select></label>
+      <label><span class="slbl">天候</span><select id="cf-weather" class="cinput"><option value="">なし</option><option>はれ</option><option>あめ</option><option>すなあらし</option><option>ゆき</option></select></label>
+      <label><span class="slbl">フィールド</span><select id="cf-terrain" class="cinput"><option value="">なし</option><option>エレキ</option><option>グラス</option><option>ミスト</option><option>サイコ</option></select></label>
+    </div>
+    <div class="cchecks">
+      <label><input type="checkbox" id="cf-reflect">リフレクター</label>
+      <label><input type="checkbox" id="cf-lightscreen">ひかりのかべ</label>
+      <label><input type="checkbox" id="cf-hh">てだすけ</label>
+      <label><input type="checkbox" id="cf-crit">急所</label>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct">結果（攻撃側 → 防御側）</div>
+    <div id="calc-result"><div class="empty">攻撃側・防御側・技を設定してください</div></div>
+  </div>
+</div>
+<datalist id="dl-ability"></datalist>
+<datalist id="dl-item"></datalist>
+<datalist id="dl-move"></datalist>
+
 <!-- SETTINGS -->
 <div id="page-settings" class="page">
   <div class="card">
@@ -321,6 +386,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
     <input type="text" id="m-input" placeholder="日本語・英語・図鑑番号で検索" autocomplete="off">
     <div class="mlist" id="m-list"><div class="mloading">読み込み中...</div></div>
     <button class="mclose" onclick="cm()">キャンセル</button>
+  </div>
+</div>
+
+<!-- BUILD EDITOR MODAL (育成データ) -->
+<div id="build-modal" style="display:none" class="moverlay" onclick="if(event.target===this)closeBuildEditor()">
+  <div class="modal">
+    <h3 id="bm-title">育成データ</h3>
+    <div class="mlist" id="bm-body" style="flex:1"><div class="mloading">読み込み中...</div></div>
+    <div class="brow" style="margin-top:8px">
+      <button class="btn p" style="flex:1;justify-content:center" onclick="saveBuild()">保存</button>
+      <button class="btn" style="flex:1;justify-content:center" onclick="closeBuildEditor()">キャンセル</button>
+    </div>
   </div>
 </div>
 
@@ -419,6 +496,23 @@ function getGasUrl(){return localStorage.getItem('gas_url')||''}
 function save(){localStorage.setItem('pb3',JSON.stringify(S))}
 function getAP(){return S.parties.find(p=>p.id===S.activeParty)||S.parties[0]}
 
+// ===== 育成データ移行(F4): pokemon配列の要素を「文字列」→「{name,points,...}」へ正規化 =====
+function pname(x){return x&&typeof x==='object'?x.name:x}            // 名前を取り出す(文字列/オブジェクト両対応)
+function pbuild(x){return x&&typeof x==='object'?x:{name:x}}          // オブジェクト化(育成データ参照用)
+function hasBuild(it){
+  if(!it||typeof it!=='object')return false;
+  const ptOn=it.points&&HK.some(k=>(it.points[k]||0)>0);
+  return !!(ptOn||it.ability||it.item||(it.tera)||(it.moves&&it.moves.some(Boolean))||(it.nature&&it.nature!=='まじめ'));
+}
+function migrateParties(){
+  let changed=0;
+  (S.parties||[]).forEach(p=>{
+    if(!Array.isArray(p.pokemon))return;
+    p.pokemon=p.pokemon.map(x=>{ if(x&&typeof x==='object')return x; changed++; return {name:x}; });
+  });
+  if(changed){console.log('[party] migrated '+changed+' pokemon to object form');save()}
+}
+
 let oppParty=[], mySel={lead:[],back:[]}, oppSel={lead:[],back:[]}, battleRes=null, curStep=1, statFilter='all';
 let modalCB=null;
 
@@ -473,18 +567,19 @@ function renderPTabs(){
 }
 function renderPartySlots(){
   const p=getAP();
-  document.getElementById('party-edit-title').textContent=`${p.name}を編集（名前をダブルクリックでリネーム）`;
+  document.getElementById('party-edit-title').textContent=`${p.name}を編集（ポケモンをタップで育成データ）`;
   const el=document.getElementById('party-slots');
   el.innerHTML='';
   for(let i=0;i<6;i++){
-    const en=p.pokemon[i];
+    const it=p.pokemon[i];
+    const en=pname(it);
     const slot=document.createElement('div');
     slot.className='pslot'+(en?'':' empty');
     slot.innerHTML=`<span class="snum">${i+1}</span>`;
     if(en){
       const r=getPoke(en)||{};
-      slot.innerHTML+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sname">${r[1]||en}</div><div style="display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center">${typeHtml(r[3])}</div><button class="rx" onclick="rmParty(event,${i})">×</button>`;
-      slot.onclick=(e)=>{if(e.target.classList.contains('rx'))return;openModal(`スロット${i+1}`,n=>setPartySlot(i,n))};
+      slot.innerHTML+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sname">${r[1]||en}</div><div style="display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center">${typeHtml(r[3])}</div><button class="rx" onclick="rmParty(event,${i})">×</button>${hasBuild(it)?'<span class="bdot" title="育成データあり"></span>':''}`;
+      slot.onclick=(e)=>{if(e.target.classList.contains('rx'))return;openBuildEditor(i)};
     }else{
       slot.innerHTML+=`<div style="font-size:18px;color:var(--text3);margin:8px 0">＋</div><div class="sname" style="color:var(--text3)">追加</div>`;
       slot.onclick=()=>openModal(`スロット${i+1}`,n=>setPartySlot(i,n));
@@ -494,8 +589,8 @@ function renderPartySlots(){
 }
 function setPartySlot(i,en){
   const p=getAP();
-  if(p.pokemon.includes(en)){alert(`${getPoke(en)?.[1]||en}はすでに登録されています`);return}
-  p.pokemon[i]=en;
+  if(p.pokemon.some(x=>pname(x)===en)){alert(`${getPoke(en)?.[1]||en}はすでに登録されています`);return}
+  p.pokemon[i]={name:en};
   while(p.pokemon.length>0&&!p.pokemon[p.pokemon.length-1])p.pokemon.pop();
   save();renderPartySlots();renderBattleMyParty();
 }
@@ -518,7 +613,7 @@ function delParty(){
 function renderBattleMyParty(){
   const p=getAP();const el=document.getElementById('battle-my-party');el.innerHTML='';
   for(let i=0;i<6;i++){
-    const en=p.pokemon[i];const slot=document.createElement('div');
+    const en=pname(p.pokemon[i]);const slot=document.createElement('div');
     slot.className='pslot'+(en?'':' empty');slot.style.pointerEvents='none';
     slot.innerHTML=`<span class="snum">${i+1}</span>`;
     if(en){const r=getPoke(en)||{};slot.innerHTML+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sname">${r[1]||en}</div>`;}
@@ -593,7 +688,7 @@ function goStep(n){
   document.querySelectorAll('.sdot').forEach((d,i)=>{d.className='sdot'+(i<n-1?' done':i===n-1?' active':'')});
   document.getElementById('slabel').textContent=['ステップ 1：相手のパーティを記録','ステップ 2：選出を選ぶ','ステップ 3：結果を記録'][n-1];
   if(n===2){
-    const myP=getAP().pokemon.filter(Boolean);
+    const myP=getAP().pokemon.filter(Boolean).map(pname);
     renderSelGrid(myP,'my-sel-grid',mySel);
     renderSelGrid(oppParty.filter(Boolean),'opp-sel-grid',oppSel);
   }
@@ -733,6 +828,7 @@ function gp(p,btn){
   if(p==='party'){renderPTabs();renderPartySlots()}
   if(p==='battle'){renderBattleMyParty();renderOppSlots()}
   if(p==='stats'){renderPFBar();renderStats()}
+  if(p==='calc'){openCalc()}
   if(p==='settings'){loadSet()}
 }
 
@@ -777,7 +873,7 @@ async function pullGAS(){
   try{
     const r=await fetch(url+'?action=pull');
     const j=await r.json();
-    if(j.ok&&j.data){S=j.data;save();renderPTabs();renderPartySlots();renderStats();alert('取得しました')}
+    if(j.ok&&j.data){S=j.data;migrateParties();save();renderPTabs();renderPartySlots();renderStats();alert('取得しました')}
     else alert('失敗：'+(j.error||'データなし'))
   }catch(e){alert('ネットワークエラー')}
 }
@@ -801,12 +897,343 @@ function handleImport(e){
 function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='battle_data.json';a.click()}
 function clearData(){if(!confirm('対戦データを全削除しますか？'))return;S.battles=[];save();renderStats();alert('削除しました')}
 
+// ===== DAMAGE CALC (Champions) =====
+// calcEngine: pure logic (depends on CALC.gen + dicts, NO DOM). renderCalc/UI below.
+const CALC = { ready:false, loading:false, built:false, gen:null, dict:null, overlay:null };
+const calcState = { atk:{species:'',mega:''}, def:{species:'',mega:''} };
+const TYPE_JA_EN={ノーマル:'Normal',ほのお:'Fire',みず:'Water',でんき:'Electric',くさ:'Grass',こおり:'Ice',かくとう:'Fighting',どく:'Poison',じめん:'Ground',ひこう:'Flying',エスパー:'Psychic',むし:'Bug',いわ:'Rock',ゴースト:'Ghost',ドラゴン:'Dragon',あく:'Dark',はがね:'Steel',フェアリー:'Fairy'};
+const WEATHER_JA_EN={はれ:'Sun',あめ:'Rain',すなあらし:'Sand',ゆき:'Snow'};
+const TERRAIN_JA_EN={エレキ:'Electric',グラス:'Grassy',ミスト:'Misty',サイコ:'Psychic'};
+const SK=['hp','atk','def','spa','spd','spe'], HK=['H','A','B','C','D','S'];
+function whenSmogon(){return new Promise(r=>{if(window.SMOGON)return r(window.SMOGON);addEventListener('smogon-ready',()=>r(window.SMOGON),{once:true})})}
+function mapHK(o){const out={};HK.forEach((k,i)=>out[SK[i]]=o[k]);return out}
+
+// nature -> which stat is +10% / -10% (engine knows). neutral -> {}
+function natModStats(natureJa){
+  const en=CALC.dict.natures[natureJa]; if(!en)return{};
+  const n=CALC.gen.natures.get(window.SMOGON.toID(en)); if(!n||n.plus===n.minus)return{};
+  return {plus:n.plus,minus:n.minus};
+}
+// Champions stat formula (Lv50, IV31, points 0-32). nature baked into final value.
+function computeChampStats(base, pts, natureJa){
+  const {plus,minus}=natModStats(natureJa), out={};
+  SK.forEach((s,i)=>{
+    const b=base[s], p=pts[HK[i]]||0, core=Math.floor((b*2+31+p*2)*50/100);
+    if(s==='hp'){ out[s]= b===1?1: core+60; }
+    else { const m=(plus===s)?1.1:(minus===s)?0.9:1; out[s]=Math.floor((core+5)*m); }
+  });
+  return out;
+}
+// R1: inject final stats as overrides.baseStats with neutral nature/IV31/EV0 (non-HP -20, HP -75)
+function injBase(f){return {hp:f.hp-75,atk:f.atk-20,def:f.def-20,spa:f.spa-20,spd:f.spd-20,spe:f.spe-20}}
+
+function buildSide(inp){
+  const G=window.SMOGON, gen=CALC.gen, notes=[];
+  let speciesEng=CALC.dict.pokemon[inp.species], baseStats=null, typesOverride=null, abilityEng;
+  if(!speciesEng) return {error:'種族不明: '+inp.species};
+  const mega=inp.mega&&CALC.overlay.megas[inp.mega];
+  if(mega){
+    baseStats=mapHK(mega.baseStats);
+    typesOverride=(mega.types||[]).map(t=>TYPE_JA_EN[t]).filter(Boolean);
+    abilityEng=(mega.abilities&&mega.abilities[0])?CALC.dict.abilities[mega.abilities[0]]:undefined;
+    notes.push('メガ: '+inp.mega+(mega.new?'(新)':'')+(mega.abilities&&mega.abilities.length?'':' ※特性未確定'));
+  }else{
+    const sp=gen.species.get(G.toID(speciesEng));
+    if(sp&&sp.baseStats){baseStats={};SK.forEach(s=>baseStats[s]=sp.baseStats[s])}
+    abilityEng=inp.ability?CALC.dict.abilities[inp.ability]:undefined; // champions-only abilities -> undefined (handled post-calc)
+  }
+  if(!baseStats) return {error:'種族値取得失敗: '+inp.species};
+  const finalStats=computeChampStats(baseStats,inp.points,inp.nature);
+  const opt={ level:50, nature:'Hardy',
+    ivs:{hp:31,atk:31,def:31,spa:31,spd:31,spe:31}, evs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0},
+    item: inp.item?CALC.dict.items[inp.item]:undefined, ability: abilityEng,
+    boosts: inp.boosts, overrides:{ baseStats: injBase(finalStats) } };
+  if(typesOverride&&typesOverride.length) opt.overrides.types=typesOverride;
+  if(inp.teraOn&&inp.tera&&TYPE_JA_EN[inp.tera]) opt.teraType=TYPE_JA_EN[inp.tera];
+  return { pokemon:new G.Pokemon(gen,speciesEng,opt), finalStats, notes };
+}
+// move build + champions overlay (power override / ability type-convert) + post-calc multiplier
+function prepMove(moveJa, atk){
+  const G=window.SMOGON, gen=CALC.gen, notes=[];
+  const eng=CALC.dict.moves[moveJa]; if(!eng) return {error:'技不明: '+moveJa};
+  const ov=CALC.overlay.moves[moveJa]||{}, overrides={};
+  if(ov.basePower!=null){overrides.basePower=ov.basePower;notes.push('威力変更('+(ov.note||'')+')')}
+  if(ov.accuracy!=null) overrides.accuracy=ov.accuracy;
+  let move=new G.Move(gen,eng,Object.keys(overrides).length?{overrides}:undefined);
+  const origType=move.type; let mult=1;
+  const ab=atk.ability&&CALC.overlay.abilities[atk.ability];
+  if(ab){
+    if(ab.fromType&&ab.toType&&origType===TYPE_JA_EN[ab.fromType]){
+      move=new G.Move(gen,eng,{overrides:Object.assign({},overrides,{type:TYPE_JA_EN[ab.toType]})});
+      if(ab.mult)mult*=ab.mult;
+      notes.push('特性 '+atk.ability+'：'+ab.fromType+'→'+ab.toType+(ab.mult?' ×'+ab.mult:''));
+    }else if(ab.type&&ab.mult&&origType===TYPE_JA_EN[ab.type]){
+      mult*=ab.mult; notes.push('特性 '+atk.ability+' ×'+ab.mult);
+    }
+  }
+  return {move,mult,notes};
+}
+function buildField(f, atkAbility){
+  const G=window.SMOGON, opt={gameType:f.gameType};
+  if(WEATHER_JA_EN[f.weather]) opt.weather=WEATHER_JA_EN[f.weather];
+  if(TERRAIN_JA_EN[f.terrain]) opt.terrain=TERRAIN_JA_EN[f.terrain];
+  const ab=atkAbility&&CALC.overlay.abilities[atkAbility];
+  if(ab&&ab.weather==='sun'&&!opt.weather) opt.weather='Sun'; // メガソーラー
+  const field=new G.Field(opt);
+  field.defenderSide=new G.Side({isReflect:f.reflect,isLightScreen:f.lightScreen});
+  field.attackerSide=new G.Side({isHelpingHand:f.helpingHand});
+  return field;
+}
+function pct(x,hp){return Math.round(x/hp*1000)/10}
+function simpleKO(min,max,hp){
+  if(min>=hp)return'確定1発';
+  const g=Math.ceil(hp/min), b=Math.ceil(hp/max);
+  return g===b?'確定'+g+'発':'乱数'+b+'〜'+g+'発';
+}
+function calcOnce(a,d,moveJa,f){
+  const G=window.SMOGON;
+  const A=buildSide(a); if(A.error)return{error:A.error};
+  const D=buildSide(d); if(D.error)return{error:D.error};
+  const pm=prepMove(moveJa,a); if(pm.error)return{error:pm.error};
+  if(f.crit)pm.move.isCrit=true;
+  const field=buildField(f,a.ability);
+  let res; try{res=G.calculate(CALC.gen,A.pokemon,D.pokemon,pm.move,field)}catch(e){return{error:'計算失敗: '+e.message}}
+  let [min,max]=res.range(); const defHP=D.finalStats.hp;
+  let engineDesc=''; try{engineDesc=res.desc()}catch(e){}
+  const mult=pm.mult||1;
+  if(mult!==1){min=Math.floor(min*mult);max=Math.floor(max*mult)}
+  const koText=simpleKO(min,max,defHP);
+  return {ok:true,moveJa,minDmg:min,maxDmg:max,defHP,minPct:pct(min,defHP),maxPct:pct(max,defHP),koText,engineDesc,notes:[...A.notes,...D.notes,...pm.notes]};
+}
+
+// ----- CALC UI -----
+function cval(id){const e=document.getElementById(id);return e?e.value:''}
+function cchk(id){const e=document.getElementById(id);return e?e.checked:false}
+function clampInt(v,lo,hi){v=parseInt(v);if(isNaN(v))return lo;return Math.max(lo,Math.min(hi,v))}
+function sideCardHtml(pre,label,withMoves){
+  return `<div class="ct">${label}</div>
+  <div class="brow" style="align-items:center;margin-bottom:10px">
+    <button class="btn" id="${pre}-poke-btn" data-role="${pre}-poke" style="min-width:130px;justify-content:center">＋ ポケモン選択</button>
+    <select id="${pre}-mega" class="cinput" style="display:none;max-width:170px"></select>
+  </div>
+  <div class="cpts">
+    ${HK.map(k=>`<label class="cpt"><span>${k}</span><input type="number" min="0" max="32" value="0" id="${pre}-pt-${k}" class="cnum"></label>`).join('')}
+    <button class="btn" id="${pre}-pts-max" style="font-size:10px;padding:4px 9px">ぶっぱ</button>
+    <span class="ctot" id="${pre}-pts-tot">合計 0/66</span>
+  </div>
+  <div class="cgrid2">
+    <label class="cf"><span class="slbl">性格</span><select id="${pre}-nature" class="cinput"></select></label>
+    <label class="cf"><span class="slbl">テラスタル</span><span style="display:flex;gap:5px;align-items:center"><select id="${pre}-tera" class="cinput"></select><input type="checkbox" id="${pre}-tera-on" title="テラス有効"></span></label>
+    <label class="cf"><span class="slbl">とくせい</span><input list="dl-ability" id="${pre}-ability" class="cinput" autocomplete="off"></label>
+    <label class="cf"><span class="slbl">もちもの</span><input list="dl-item" id="${pre}-item" class="cinput" autocomplete="off"></label>
+  </div>
+  <span class="slbl">ランク補正</span>
+  <div class="cranks">
+    ${[['A','atk'],['B','def'],['C','spa'],['D','spd'],['S','spe']].map(([j,s])=>`<label class="crk"><span>${j}</span><select id="${pre}-rk-${s}" class="cinput crksel"></select></label>`).join('')}
+  </div>
+  ${withMoves?`<div class="cmoves"><span class="slbl">技（最大4・複数まとめて計算）</span>${[0,1,2,3].map(i=>`<input list="dl-move" id="${pre}-move-${i}" class="cinput" placeholder="技${i+1}" autocomplete="off">`).join('')}</div>`:''}`;
+}
+function buildCalcUI(){
+  document.getElementById('calc-atk').innerHTML=sideCardHtml('atk','攻撃側',true);
+  document.getElementById('calc-def').innerHTML=sideCardHtml('def','防御側',false);
+  document.getElementById('atk-poke-btn').onclick=()=>pickCalcPoke('atk');
+  document.getElementById('def-poke-btn').onclick=()=>pickCalcPoke('def');
+  document.getElementById('atk-pts-max').onclick=()=>setBuppa('atk');
+  document.getElementById('def-pts-max').onclick=()=>setBuppa('def');
+  document.getElementById('atk-mega').onchange=e=>{calcState.atk.mega=e.target.value;recalc()};
+  document.getElementById('def-mega').onchange=e=>{calcState.def.mega=e.target.value;recalc()};
+  const page=document.getElementById('page-calc');
+  page.addEventListener('input',e=>{ if(e.target.classList.contains('cnum'))updateTot(e.target.id.slice(0,3)); recalc(); });
+  page.addEventListener('change',recalc);
+}
+function esc(s){return String(s||'').replace(/"/g,'&quot;')}
+function natureOptionsHtml(sel){return Object.keys(CALC.dict.natures).map(n=>`<option${n===(sel||'まじめ')?' selected':''}>${n}</option>`).join('')}
+function teraOptionsHtml(sel){return '<option value="">なし</option>'+Object.keys(TYPE_JA_EN).map(t=>`<option${t===sel?' selected':''}>${t}</option>`).join('')}
+function fillDatalists(){
+  const fillDL=(id,keys)=>{const e=document.getElementById(id);if(e)e.innerHTML=keys.map(k=>`<option value="${esc(k)}"></option>`).join('')};
+  fillDL('dl-ability',[...new Set([...Object.keys(CALC.dict.abilities),...Object.keys(CALC.overlay.abilities)])].sort());
+  fillDL('dl-item',Object.keys(CALC.dict.items));
+  fillDL('dl-move',[...new Set([...Object.keys(CALC.dict.moves),...Object.keys(CALC.overlay.moves)])]);
+}
+function populateCalcLists(){
+  const rankOpts=[6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6].map(n=>`<option value="${n}"${n===0?' selected':''}>${n>0?'+'+n:n}</option>`).join('');
+  ['atk','def'].forEach(pre=>{
+    document.getElementById(pre+'-nature').innerHTML=natureOptionsHtml('まじめ');
+    document.getElementById(pre+'-tera').innerHTML=teraOptionsHtml('');
+    ['atk','def','spa','spd','spe'].forEach(s=>document.getElementById(`${pre}-rk-${s}`).innerHTML=rankOpts);
+  });
+  fillDatalists();
+}
+function setBuppa(pre){
+  // 計66: 2能力に32 + 1能力(H)に2。攻撃側はA/S、防御側はB/Dぶっぱ（編集自由）
+  const v=pre==='atk'?{H:2,A:32,B:0,C:0,D:0,S:32}:{H:2,A:0,B:32,C:0,D:32,S:0};
+  HK.forEach(k=>document.getElementById(`${pre}-pt-${k}`).value=v[k]);
+  updateTot(pre); recalc();
+}
+function updateTot(pre){
+  let t=0; HK.forEach(k=>t+=clampInt(cval(`${pre}-pt-${k}`),0,32));
+  const el=document.getElementById(pre+'-pts-tot'); el.textContent='合計 '+t+'/66'; el.classList.toggle('over',t>66);
+}
+function pickCalcPoke(pre){
+  openModal((pre==='atk'?'攻撃':'防御')+'側のポケモン',name=>{
+    calcState[pre].species=name; calcState[pre].mega='';
+    updateCalcPokeBtn(pre); updateMegaSelect(pre); recalc();
+  });
+}
+function updateCalcPokeBtn(pre){
+  const sp=calcState[pre].species, btn=document.getElementById(pre+'-poke-btn');
+  if(!sp){btn.innerHTML='＋ ポケモン選択';return}
+  const r=getPoke(sp)||{};
+  btn.innerHTML=`<img src="${r[4]||''}" style="width:24px;height:24px;object-fit:contain;image-rendering:pixelated;vertical-align:middle" onerror="this.style.display='none'"> ${r[1]||sp}`;
+}
+function stripMega(m){return m.replace(/^(メガ|ゲンシ)/,'').replace(/[XYZ]$/,'')} // メガリザードンX->リザードン, ゲンシカイオーガ->カイオーガ
+function updateMegaSelect(pre){
+  const sel=document.getElementById(pre+'-mega'), sp=calcState[pre].species;
+  const opts=sp?Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===sp):[];
+  if(!opts.length){sel.style.display='none';sel.innerHTML='';calcState[pre].mega='';return}
+  sel.innerHTML='<option value="">通常</option>'+opts.map(m=>`<option value="${m}">${m}</option>`).join('');
+  sel.style.display='';
+}
+function readSide(pre){
+  const pts={}; HK.forEach(k=>pts[k]=clampInt(cval(`${pre}-pt-${k}`),0,32));
+  const boosts={}; ['atk','def','spa','spd','spe'].forEach(s=>boosts[s]=parseInt(cval(`${pre}-rk-${s}`))||0);
+  return {species:calcState[pre].species,mega:calcState[pre].mega,points:pts,nature:cval(`${pre}-nature`),
+    ability:cval(`${pre}-ability`).trim(),item:cval(`${pre}-item`).trim(),
+    tera:cval(`${pre}-tera`),teraOn:cchk(`${pre}-tera-on`),boosts};
+}
+function readField(){return {gameType:cval('cf-gametype'),weather:cval('cf-weather'),terrain:cval('cf-terrain'),
+  reflect:cchk('cf-reflect'),lightScreen:cchk('cf-lightscreen'),helpingHand:cchk('cf-hh'),crit:cchk('cf-crit')}}
+function recalc(){
+  const el=document.getElementById('calc-result'); if(!el)return;
+  if(!CALC.ready){el.innerHTML='<div class="empty">計算エンジンを読み込み中...</div>';return}
+  const a=readSide('atk'), d=readSide('def'), f=readField();
+  if(!a.species||!d.species){el.innerHTML='<div class="empty">攻撃側・防御側のポケモンを選択してください</div>';return}
+  const moves=[0,1,2,3].map(i=>cval('atk-move-'+i).trim()).filter(Boolean);
+  if(!moves.length){el.innerHTML='<div class="empty">攻撃側の技を入力してください</div>';return}
+  let html='';
+  moves.forEach(mj=>{
+    const r=calcOnce(a,d,mj,f);
+    if(r.error){html+=`<div class="cres err">${mj}: ${r.error}</div>`;return}
+    const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text1)';
+    html+=`<div class="cres">
+      <div class="cres-h"><span class="cres-mv">${mj}</span><span class="cres-dmg">${r.minDmg}〜${r.maxDmg}</span></div>
+      <div class="cres-bar"><div class="cres-fill" style="width:${Math.min(100,r.maxPct)}%;background:${col}"></div></div>
+      <div class="cres-meta"><span style="color:${col}">${r.minPct}〜${r.maxPct}%（HP${r.defHP}）</span><span class="cres-ko">${r.koText}</span></div>
+      ${r.notes.length?`<div class="cres-note">${r.notes.join(' / ')}</div>`:''}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+async function loadCalcDicts(){
+  if(CALC.dict)return;
+  console.log('[calc] loading dicts/overlay');
+  const jf=n=>fetch('./data/'+n+'.json?v='+Date.now()).then(r=>{if(!r.ok)throw new Error(n+' HTTP '+r.status);return r.json()});
+  const [pk,mv,ab,it,na,ov]=await Promise.all([jf('dict_pokemon'),jf('dict_moves'),jf('dict_abilities'),jf('dict_items'),jf('dict_natures'),jf('champions_overlay')]);
+  CALC.dict={pokemon:pk.map,moves:mv.map,abilities:ab.map,items:it.map,natures:na.map};
+  CALC.overlay=ov;
+  fillDatalists();
+  console.log('[calc] dicts ready: pokemon',Object.keys(pk.map).length,'moves',Object.keys(mv.map).length,'megas',Object.keys(ov.megas).length);
+}
+async function initCalc(){
+  if(CALC.ready||CALC.loading)return;
+  CALC.loading=true;
+  console.log('[calc] init: waiting for engine + dicts');
+  try{
+    const G=await whenSmogon();
+    await loadCalcDicts();
+    CALC.gen=G.Generations.get(9); CALC.ready=true;
+    populateCalcLists();
+    recalc();
+  }catch(e){
+    console.error('[calc] init failed',e);
+    const el=document.getElementById('calc-result');
+    if(el)el.innerHTML='<div class="cres err">計算エンジン／辞書の読み込みに失敗しました。オンライン環境で再読み込みしてください（'+e.message+'）</div>';
+  }finally{CALC.loading=false}
+}
+function openCalc(){
+  if(!CALC.built){buildCalcUI();CALC.built=true}
+  initCalc();
+}
+
+// ===== 育成データエディタ(F3) =====
+let bmIdx=-1, bmSpecies='';
+async function openBuildEditor(i){
+  const p=getAP(), it=pbuild(p.pokemon[i]);
+  if(!it||!it.name)return;
+  bmIdx=i; bmSpecies=it.name;
+  const r=getPoke(it.name)||{};
+  document.getElementById('bm-title').textContent=`育成データ — ${r[1]||it.name}`;
+  const body=document.getElementById('bm-body');
+  body.innerHTML='<div class="mloading">辞書を読み込み中...</div>';
+  document.getElementById('build-modal').style.display='flex';
+  try{ await loadCalcDicts(); renderBuildForm(it); }
+  catch(e){ body.innerHTML='<div class="cres err">辞書の読み込みに失敗しました（'+e.message+'）</div>'; }
+}
+function renderBuildForm(it){
+  const pts=it.points||{H:0,A:0,B:0,C:0,D:0,S:0}, moves=it.moves||['','','',''];
+  const body=document.getElementById('bm-body');
+  body.innerHTML=`
+    <div class="brow" style="margin-bottom:10px">
+      <button class="btn" id="bm-change" style="font-size:11px">ポケモンを変更</button>
+    </div>
+    <div class="cpts">
+      ${HK.map(k=>`<label class="cpt"><span>${k}</span><input type="number" min="0" max="32" value="${clampInt(pts[k],0,32)}" id="bm-pt-${k}" class="cnum"></label>`).join('')}
+      <button class="btn" id="bm-buppa" style="font-size:10px;padding:4px 9px">ぶっぱ</button>
+      <span class="ctot" id="bm-tot">合計 0/66</span>
+    </div>
+    <div class="cgrid2">
+      <label class="cf"><span class="slbl">性格</span><select id="bm-nature" class="cinput">${natureOptionsHtml(it.nature)}</select></label>
+      <label class="cf"><span class="slbl">テラスタル</span><select id="bm-tera" class="cinput">${teraOptionsHtml(it.tera||'')}</select></label>
+      <label class="cf"><span class="slbl">とくせい</span><input list="dl-ability" id="bm-ability" class="cinput" autocomplete="off" value="${esc(it.ability)}"></label>
+      <label class="cf"><span class="slbl">もちもの</span><input list="dl-item" id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}"></label>
+    </div>
+    <div class="cmoves"><span class="slbl">技（最大4）</span>${[0,1,2,3].map(j=>`<input list="dl-move" id="bm-move-${j}" class="cinput" placeholder="技${j+1}" autocomplete="off" value="${esc(moves[j])}">`).join('')}</div>`;
+  document.getElementById('bm-change').onclick=()=>{
+    const idx=bmIdx; closeBuildEditor();
+    openModal('ポケモンを変更',name=>{
+      const p=getAP();
+      if(p.pokemon.some((x,j)=>j!==idx&&pname(x)===name)){alert((getPoke(name)?.[1]||name)+'はすでに登録されています');return}
+      p.pokemon[idx]={name}; save(); renderPartySlots(); renderBattleMyParty();
+    });
+  };
+  document.getElementById('bm-buppa').onclick=()=>{ const v={H:2,A:32,B:0,C:0,D:0,S:32}; HK.forEach(k=>document.getElementById('bm-pt-'+k).value=v[k]); updateBmTot(); };
+  if(!renderBuildForm._wired){ document.getElementById('bm-body').addEventListener('input',e=>{ if(e.target.classList.contains('cnum'))updateBmTot(); }); renderBuildForm._wired=true; }
+  updateBmTot();
+}
+function updateBmTot(){
+  let t=0; HK.forEach(k=>t+=clampInt(cval('bm-pt-'+k),0,32));
+  const el=document.getElementById('bm-tot'); if(!el)return;
+  el.textContent='合計 '+t+'/66'; el.classList.toggle('over',t>66);
+}
+function saveBuild(){
+  if(bmIdx<0)return;
+  const p=getAP();
+  const pts={}; HK.forEach(k=>pts[k]=clampInt(cval('bm-pt-'+k),0,32));
+  const tot=HK.reduce((s,k)=>s+pts[k],0);
+  if(tot>66&&!confirm('能力ポイント合計が66を超えています（'+tot+'）。このまま保存しますか？'))return;
+  const moves=[0,1,2,3].map(j=>cval('bm-move-'+j).trim());
+  p.pokemon[bmIdx]={name:bmSpecies,points:pts,nature:cval('bm-nature'),
+    ability:cval('bm-ability').trim(),item:cval('bm-item').trim(),tera:cval('bm-tera'),moves};
+  console.log('[party] saved build slot '+bmIdx+': '+bmSpecies+' pts='+tot);
+  save(); renderPartySlots(); renderBattleMyParty(); closeBuildEditor();
+}
+function closeBuildEditor(){ document.getElementById('build-modal').style.display='none'; bmIdx=-1; }
+
 // ===== INIT =====
 (async () => {
   await loadPokeCSV();
+  migrateParties();
   renderPTabs();
   renderPartySlots();
 })();
+</script>
+
+<!-- @smogon/calc engine (ESM, dependency-bundled). Bridges to window.SMOGON for the non-module calc code above. -->
+<script type="module">
+  import * as smogon from 'https://cdn.jsdelivr.net/npm/@smogon/calc@0.11/+esm';
+  window.SMOGON = smogon;
+  window.dispatchEvent(new Event('smogon-ready'));
+  console.log('[calc] @smogon/calc loaded');
 </script>
 </body>
 </html>
