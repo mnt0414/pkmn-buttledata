@@ -3,386 +3,268 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ダブルバトル記録</title>
-<style>
-:root{--bg0:#0f1117;--bg1:#1a1d27;--bg2:#22263a;--bg3:#2a2f45;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);--text1:#f0f2ff;--text2:#9ba3c4;--text3:#5c6480;--accent:#6c8eff;--accent2:#4ade80;--win:#22c55e;--loss:#ef4444;--r:12px;--rs:8px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var(--text1);min-height:100vh;overflow-x:hidden;font-size:14px}
-.top-nav{display:flex;background:var(--bg1);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;overflow-x:auto;scrollbar-width:none}
-.top-nav::-webkit-scrollbar{display:none}
-.nav-btn{flex:1;min-width:60px;padding:12px 4px;background:none;border:none;color:var(--text2);font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s;white-space:nowrap}
-.nav-btn svg{width:18px;height:18px}
-.nav-btn.active{color:var(--accent);border-bottom:2px solid var(--accent)}
-.nav-btn:hover:not(.active){color:var(--text1)}
-.page{display:none;padding:12px;max-width:900px;margin:0 auto;min-height:calc(100vh - 52px)}
-.page.active{display:block}
-.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
-.ct{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
-/* PARTY TABS */
-.ptabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
-.ptab{padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;transition:all .15s}
-.ptab.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.ptab:hover:not(.active){border-color:var(--accent);color:var(--text1)}
-/* POKE GRID */
-.pg6{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-@media(max-width:480px){.pg6{grid-template-columns:repeat(3,1fr)}}
-.pslot{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 4px;cursor:pointer;transition:all .15s;min-height:86px;position:relative;user-select:none}
-.pslot:hover{border-color:var(--accent);background:var(--bg3)}
-.pslot.empty{border-style:dashed}
-.pslot img{width:52px;height:52px;object-fit:contain;image-rendering:pixelated}
-.pslot .sname{font-size:9px;color:var(--text2);margin-top:2px;text-align:center;line-height:1.2;word-break:break-all}
-.pslot .snum{position:absolute;top:3px;left:5px;font-size:9px;color:var(--text3);font-weight:600}
-.pslot .rx{position:absolute;top:2px;right:4px;background:var(--bg3);border:none;color:var(--text3);font-size:11px;cursor:pointer;width:15px;height:15px;display:flex;align-items:center;justify-content:center;border-radius:50%}
-.pslot .rx:hover{color:var(--loss)}
-.pslot .bdot{position:absolute;bottom:4px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--accent2);box-shadow:0 0 0 1px var(--bg2)}
-/* TYPE */
-.tbadge{display:inline-block;font-size:8px;font-weight:600;padding:1px 4px;border-radius:3px;text-transform:uppercase}
-/* MODAL */
-.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-@media(min-width:600px){.moverlay{align-items:center}}
-.modal{background:var(--bg1);border:1px solid var(--border2);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:500px;padding:16px;max-height:82vh;display:flex;flex-direction:column}
-@media(min-width:600px){.modal{border-radius:var(--r);max-height:70vh}}
-.modal h3{font-size:13px;font-weight:600;margin-bottom:10px}
-.modal input{width:100%;padding:9px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:14px;outline:none;margin-bottom:6px}
-.modal input:focus{border-color:var(--accent)}
-.mlist{overflow-y:auto;flex:1}
-.mitem{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--rs);cursor:pointer;transition:background .1s}
-.mitem:hover{background:var(--bg3)}
-.mitem img{width:40px;height:40px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
-.mitem-info{flex:1;min-width:0}
-.mitem-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mitem-sub{font-size:10px;color:var(--text3)}
-.mitem-types{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
-.mitem a{color:var(--accent);font-size:10px;text-decoration:none;flex-shrink:0}
-.mclose{background:var(--bg2);border:1px solid var(--border);color:var(--text2);padding:8px;border-radius:var(--rs);cursor:pointer;font-size:12px;margin-top:6px;width:100%}
-.mloading{text-align:center;padding:20px;color:var(--text2);font-size:12px}
-/* STEPS */
-.sbar{display:flex;gap:3px;margin-bottom:12px}
-.sdot{flex:1;height:3px;background:var(--bg3);border-radius:2px;transition:background .3s}
-.sdot.done{background:var(--accent2)}.sdot.active{background:var(--accent)}
-/* SEL GRID */
-.selgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
-.selbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;min-height:72px}
-.selbtn img{width:42px;height:42px;object-fit:contain;image-rendering:pixelated}
-.selbtn .sl{font-size:8px;color:var(--text2);text-align:center}
-.selbtn.lead{border-color:var(--accent);background:rgba(108,142,255,.12)}
-.selbtn.lead .sl{color:var(--accent);font-weight:600}
-.selbtn.back{border-color:var(--accent2);background:rgba(74,222,128,.1)}
-.selbtn.back .sl{color:var(--accent2);font-weight:600}
-.selbtn:hover:not(.lead):not(.back){background:var(--bg3)}
-/* RESULT */
-.resbts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-.resbtn{padding:14px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;font-size:16px;font-weight:700;cursor:pointer;transition:all .15s}
-.resbtn.win-btn{color:var(--win)}.resbtn.loss-btn{color:var(--loss)}
-.resbtn.win-btn.sel{background:rgba(34,197,94,.18);border-color:var(--win)}
-.resbtn.loss-btn.sel{background:rgba(239,68,68,.15);border-color:var(--loss)}
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:var(--rs);border:1px solid var(--border2);background:transparent;color:var(--text1);font-size:12px;cursor:pointer;transition:all .15s}
-.btn:hover{background:var(--bg3)}
-.btn.p{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.p:hover{opacity:.88}
-.btn.s{background:rgba(34,197,94,.18);border-color:var(--win);color:var(--win)}
-.btn.d{background:rgba(239,68,68,.12);border-color:var(--loss);color:var(--loss)}
-.brow{display:flex;gap:6px;flex-wrap:wrap}
-/* 2COL */
-.tc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:480px){.tc{grid-template-columns:1fr}}
-/* STATS */
-.sh{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
-.sc{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center}
-.sc .val{font-size:22px;font-weight:700;color:var(--accent)}
-.sc .lbl{font-size:9px;color:var(--text3);margin-top:2px}
-.sc .sub{font-size:10px;color:var(--text2);margin-top:2px}
-.stabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:10px}
-.stab{padding:5px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:10px;cursor:pointer}
-.stab.active{background:var(--bg2);color:var(--text1);border-color:var(--border2)}
-.pfbar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
-.pfbtn{padding:3px 9px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:10px;cursor:pointer}
-.pfbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-/* RATE ROW */
-.rr{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border)}
-.rr:last-child{border-bottom:none}
-.rr img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
-.rr .nm{font-size:11px;width:72px;flex-shrink:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.rbwrap{flex:1;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
-.rbar{height:100%;border-radius:2px;transition:width .5s}
-.rval{font-size:10px;color:var(--text2);min-width:32px;text-align:right}
-/* COMBO ROW */
-.cr{display:flex;align-items:center;gap:5px;padding:7px 0;border-bottom:1px solid var(--border)}
-.cr:last-child{border-bottom:none}
-.ppair{display:flex}
-.ppair img{width:30px;height:30px;object-fit:contain;image-rendering:pixelated}
-.wrbw{flex:1;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin:0 5px}
-.wrb{height:100%;border-radius:2px}
-.wrv{font-size:10px;min-width:54px;text-align:right}
-/* POKE WR ROW */
-.pwr{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border)}
-.pwr:last-child{border-bottom:none}
-.pwr img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated}
-/* HIST */
-.hr{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.hr:last-child{border-bottom:none}
-.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
-.bw{background:rgba(34,197,94,.15);color:var(--win)}.bl{background:rgba(239,68,68,.12);color:var(--loss)}
-/* SETTINGS */
-.nbar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:var(--rs);font-size:11px;margin-bottom:12px}
-.nbar.ok{background:rgba(34,197,94,.1);color:var(--win);border:1px solid rgba(34,197,94,.3)}
-.nbar.ng{background:rgba(239,68,68,.1);color:var(--loss);border:1px solid rgba(239,68,68,.3)}
-.nbar.idle{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
-.slbl{font-size:10px;color:var(--text3);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
-.sinput{width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:13px;outline:none;margin-bottom:8px}
-.sinput:focus{border-color:var(--accent)}
-/* CROSS TABLE */
-.xtable{width:100%;border-collapse:collapse;font-size:10px}
-.xtable th,.xtable td{padding:5px 6px;border:1px solid var(--border);text-align:center}
-.xtable th{background:var(--bg2);color:var(--text2);font-weight:500}
-.xtable td{background:var(--bg1)}
-/* CONFIRM POKE */
-.cpoke{display:flex;align-items:center;gap:5px;padding:4px 0}
-.cpoke img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated}
-.cpos{font-size:8px;padding:1px 4px;border-radius:3px;font-weight:600}
-.cplead{background:rgba(108,142,255,.2);color:var(--accent)}
-.cpback{background:rgba(74,222,128,.15);color:var(--accent2)}
-/* EMPTY */
-.empty{text-align:center;padding:28px;color:var(--text3);font-size:12px}
-/* SCROLLBAR */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
-/* 2col select */
-.sel2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:480px){.sel2{grid-template-columns:1fr}}
-</style>
+<title>BATTLEREC</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div class="app" id="app">
 
-<nav class="top-nav">
-  <button class="nav-btn active" onclick="gp('party',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>パーティ
-  </button>
-  <button class="nav-btn" onclick="gp('battle',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2L6 14h7l-3 8 10-12h-7l3-8z"/></svg>対戦記録
-  </button>
-  <button class="nav-btn" onclick="gp('stats',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M7 16V10M12 16V4M17 16v-6"/></svg>データ
-  </button>
-  <button class="nav-btn" onclick="gp('calc',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 10h2M12 10h2M16 10h0M8 14h2M12 14h2M16 14h0M8 18h2M12 18h2"/></svg>計算
-  </button>
-  <button class="nav-btn" onclick="gp('settings',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>設定
-  </button>
-</nav>
-
-<!-- PARTY -->
-<div id="page-party" class="page active">
-  <div class="card">
-    <div class="ct">パーティ切り替え</div>
-    <div class="ptabs" id="ptab-list"></div>
-    <div class="brow" style="margin-top:6px">
-      <button class="btn" onclick="addParty()">＋ 新規パーティ</button>
-      <button class="btn d" onclick="delParty()">このパーティを削除</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ct" id="party-edit-title">パーティを編集</div>
-    <div class="pg6" id="party-slots"></div>
-  </div>
-</div>
-
-<!-- BATTLE -->
-<div id="page-battle" class="page">
-  <div class="card" style="padding:10px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <div style="font-size:10px;color:var(--text3)">使用中のパーティ</div>
-      <button class="btn" style="font-size:10px;padding:3px 8px" onclick="gp('party',document.querySelectorAll('.nav-btn')[0])">変更</button>
-    </div>
-    <div class="pg6" id="battle-my-party" style="pointer-events:none"></div>
-  </div>
-  <div class="card">
-    <div class="sbar" id="sbar"><div class="sdot active"></div><div class="sdot"></div><div class="sdot"></div></div>
-    <div id="slabel" style="font-size:11px;color:var(--text2);margin-bottom:12px">ステップ 1：相手のパーティを記録</div>
-    <div id="bs1">
-      <div class="ct">相手のパーティ（クリックして登録）</div>
-      <div class="pg6" id="opp-party-slots"></div>
-      <div class="brow" style="margin-top:10px;justify-content:flex-end">
-        <button class="btn p" onclick="goStep(2)">次へ →</button>
+  <!-- Sidebar (tablet+) -->
+  <aside class="side">
+    <div class="brand-wrap">
+      <div style="width:34px;height:34px;flex:none;display:flex;align-items:center;justify-content:center;">
+        <svg width="34" height="34" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="44" fill="#f1f5f9" stroke="#2a323d" stroke-width="4"/><path d="M50 6a44 44 0 0 1 44 44H6A44 44 0 0 1 50 6z" fill="#ff3b4e"/><path d="M6 50h27.5a16.5 16.5 0 0 0 33 0H94" stroke="#0c0f14" stroke-width="6" fill="none"/><circle cx="50" cy="50" r="13" fill="#f1f5f9" stroke="#0c0f14" stroke-width="6"/><circle cx="50" cy="50" r="5.5" fill="#0c0f14"/></svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name num">BATTLE<span style="color:#ff3b4e;">REC</span></div>
+        <div class="brand-sub">CHAMPIONS / DOUBLE</div>
       </div>
     </div>
-    <div id="bs2" style="display:none">
-      <div class="sel2">
-        <div>
-          <div class="ct">自分の選出（先発2→後発2）</div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:6px">青=先発 緑=後発</div>
-          <div class="selgrid" id="my-sel-grid"></div>
+    <button class="nav-item active" data-page="party" onclick="gp('party',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="nav-label">パーティ</span>
+    </button>
+    <button class="nav-item" data-page="battle" onclick="gp('battle',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="14" x2="9" y2="18"/><line x1="7" y1="17" x2="4" y2="20"/><line x1="3" y1="19" x2="5" y2="21"/></svg>
+      <span class="nav-label">対戦記録</span>
+    </button>
+    <button class="nav-item" data-page="stats" onclick="gp('stats',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M7 16V10M12 16V4M17 16v-6"/></svg>
+      <span class="nav-label">データ</span>
+    </button>
+    <button class="nav-item" data-page="calc" onclick="gp('calc',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 10h.5M11.5 10h.5M15.5 10h.5M8 14h.5M11.5 14h.5M15.5 14h.5M8 18h4"/></svg>
+      <span class="nav-label">計算</span>
+    </button>
+    <button class="nav-item" data-page="settings" onclick="gp('settings',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" fill-rule="evenodd" stroke="none" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      <span class="nav-label">設定</span>
+    </button>
+    <div class="side-spacer"></div>
+    <div class="side-foot">
+      <div class="sync-pill">
+        <span class="sync-dot"></span>
+        <div>クラウド同期済み<div style="color:var(--text3);font-size:10.5px;" id="sync-count"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="page-header">
+      <div class="page-kicker num" id="hdr-kicker">MY PARTY</div>
+      <div class="page-title-row">
+        <h1 class="page-title num" id="hdr-title">パーティ</h1>
+        <span class="page-sub" id="hdr-sub"></span>
+      </div>
+    </header>
+
+    <div class="scroll-area">
+
+      <!-- PARTY -->
+      <div id="page-party" class="view active">
+        <section class="card">
+          <div class="ct">パーティ切り替え</div>
+          <div class="ptabs" id="ptab-list"></div>
+          <div class="brow" style="margin-top:10px;">
+            <button class="btn" onclick="addParty()">＋ 新規パーティ</button>
+            <button class="btn d" onclick="delParty()">このパーティを削除</button>
+          </div>
+        </section>
+        <section class="card">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px;">
+            <div class="ct" id="party-edit-title" style="margin-bottom:0;">パーティを編集</div>
+            <span style="font-size:11px;color:var(--text3);">— スロットをタップで育成データ</span>
+          </div>
+          <div class="pg6" id="party-slots"></div>
+        </section>
+      </div>
+
+      <!-- BATTLE -->
+      <div id="page-battle" class="view">
+        <section class="card" style="padding:12px 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">
+            <div class="ct" style="margin-bottom:0;" id="battle-party-label">使用中のパーティ</div>
+            <button class="btn" style="font-size:11px;padding:4px 10px;" onclick="gp('party',null)">変更</button>
+          </div>
+          <div class="party-mini" id="battle-my-party"></div>
+          <div id="speed-order" style="margin-top:8px;"></div>
+        </section>
+        <section class="card">
+          <div class="step-dots" id="sbar">
+            <div class="step-dot" style="background:var(--red);"></div>
+            <div class="step-dot" style="background:var(--line);"></div>
+            <div class="step-dot" style="background:var(--line);"></div>
+          </div>
+          <div class="step-label num" id="slabel">ステップ 1：相手のパーティを記録</div>
+          <div id="bs1">
+            <div class="ct">相手のパーティ（タップで登録）</div>
+            <div class="opp-grid" id="opp-party-slots"></div>
+            <div class="brow" style="margin-top:12px;justify-content:flex-end;">
+              <button class="btn p" onclick="goStep(2)">次へ →</button>
+            </div>
+          </div>
+          <div id="bs2" style="display:none;">
+            <div class="sel2">
+              <div>
+                <div class="ct">自分の選出</div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:8px;"><span style="color:var(--lead);">■</span> 先発　<span style="color:var(--win);">■</span> 後発</div>
+                <div class="selgrid" id="my-sel-grid"></div>
+              </div>
+              <div>
+                <div class="ct">相手の選出</div>
+                <div style="font-size:10px;color:var(--text3);margin-bottom:8px;"><span style="color:var(--lead);">■</span> 先発　<span style="color:var(--win);">■</span> 後発</div>
+                <div class="selgrid" id="opp-sel-grid"></div>
+              </div>
+            </div>
+            <div class="brow" style="justify-content:space-between;margin-top:14px;">
+              <button class="btn" onclick="goStep(1)">← 戻る</button>
+              <button class="btn p" onclick="goStep(3)">次へ →</button>
+            </div>
+          </div>
+          <div id="bs3" style="display:none;">
+            <div class="ct">対戦結果</div>
+            <div class="resbts">
+              <button class="resbtn win-btn" id="rbw" onclick="setRes('win')">勝ち ✓</button>
+              <button class="resbtn loss-btn" id="rbl" onclick="setRes('loss')">負け ✗</button>
+            </div>
+            <div class="brow" style="justify-content:space-between;">
+              <button class="btn" onclick="goStep(2)">← 戻る</button>
+              <button class="btn s" onclick="saveBattle()">保存する</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- STATS -->
+      <div id="page-stats" class="view">
+        <div class="sh" id="stat-sum"></div>
+        <div class="pfbar" id="pf-bar"></div>
+        <div class="stabs">
+          <button class="stab active" onclick="showST('pickrate',this)">選出率</button>
+          <button class="stab" onclick="showST('combo',this)">組み合わせ</button>
+          <button class="stab" onclick="showST('winrate',this)">ポケモン別勝率</button>
+          <button class="stab" onclick="showST('history',this)">履歴</button>
         </div>
-        <div>
-          <div class="ct">相手の選出（先発2→後発2）</div>
-          <div style="font-size:9px;color:var(--text3);margin-bottom:6px">青=先発 緑=後発</div>
-          <div class="selgrid" id="opp-sel-grid"></div>
+        <div id="st-pickrate">
+          <div class="card"><div class="ct">自分の選出率</div><div id="my-pick"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">相手の選出率</div><div id="opp-pick"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">自分の先発ペア率</div><div id="my-lead-r"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">相手の先発ペア率</div><div id="opp-lead-r"></div></div>
+        </div>
+        <div id="st-combo" style="display:none;">
+          <div class="card"><div class="ct">自分の先発ペア別勝率（上位5）</div><div id="my-cw-top"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">自分の先発ペア別勝率（下位5）</div><div id="my-cw-bot"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">相手の先発ペア別勝率（上位5）</div><div id="opp-cw-top"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">相手の先発ペア別勝率（下位5）</div><div id="opp-cw-bot"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">自分先発上位5 × 相手先発上位10</div><div id="cross-c" style="overflow-x:auto;"></div></div>
+        </div>
+        <div id="st-winrate" style="display:none;">
+          <div class="card"><div class="ct">ポケモン別勝率（自分）</div><div id="my-pwr"></div></div>
+          <div class="card" style="margin-top:14px;"><div class="ct">ポケモン別勝率（相手）</div><div id="opp-pwr"></div></div>
+        </div>
+        <div id="st-history" style="display:none;">
+          <div class="card"><div class="ct">対戦履歴</div><div id="hist-list"></div></div>
         </div>
       </div>
-      <div class="brow" style="margin-top:10px;justify-content:space-between">
-        <button class="btn" onclick="goStep(1)">← 戻る</button>
-        <button class="btn p" onclick="goStep(3)">次へ →</button>
+
+      <!-- CALC -->
+      <div id="page-calc" class="view">
+        <div class="card" id="calc-atk" data-role="atk-card"></div>
+        <div class="card" id="calc-def" data-role="def-card"></div>
+        <div class="card" id="calc-field">
+          <div class="ct">場の条件</div>
+          <div class="cfield">
+            <label><span class="slbl">ルール</span><select id="cf-gametype" class="cinput"><option value="Doubles">ダブル</option><option value="Singles">シングル</option></select></label>
+            <label><span class="slbl">天候</span><select id="cf-weather" class="cinput"><option value="">なし</option><option>はれ</option><option>あめ</option><option>すなあらし</option><option>ゆき</option></select></label>
+            <label><span class="slbl">フィールド</span><select id="cf-terrain" class="cinput"><option value="">なし</option><option>エレキ</option><option>グラス</option><option>ミスト</option><option>サイコ</option></select></label>
+          </div>
+          <div class="cchecks">
+            <label><input type="checkbox" id="cf-reflect">リフレクター</label>
+            <label><input type="checkbox" id="cf-lightscreen">ひかりのかべ</label>
+            <label><input type="checkbox" id="cf-hh">てだすけ</label>
+            <label><input type="checkbox" id="cf-crit">急所</label>
+            <label><input type="checkbox" id="cf-half-berry">半減実</label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct">結果（攻撃側 → 防御側）</div>
+          <div id="calc-result"><div class="empty">攻撃側・防御側・技を設定してください</div></div>
+        </div>
       </div>
-    </div>
-    <div id="bs3" style="display:none">
-      <div class="tc" style="margin-bottom:12px">
-        <div><div class="ct">自分</div><div id="my-confirm"></div></div>
-        <div><div class="ct">相手</div><div id="opp-confirm"></div></div>
+      <datalist id="dl-ability"></datalist>
+      <datalist id="dl-ability-atk"></datalist>
+      <datalist id="dl-ability-def"></datalist>
+      <datalist id="dl-item"></datalist>
+      <datalist id="dl-move"></datalist>
+
+      <!-- SETTINGS -->
+      <div id="page-settings" class="view">
+        <section class="card" style="max-width:620px;">
+          <div class="ct">クラウド同期（Google スプレッドシート）</div>
+          <div id="nbar" class="nbar idle">未設定</div>
+          <label class="slbl">APPS SCRIPT URL</label>
+          <input type="text" class="sinput" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" oninput="saveSet()" autocomplete="off">
+          <div class="brow">
+            <button class="btn p" onclick="testGAS()">接続テスト</button>
+            <button class="btn" onclick="pullGAS()">↓ クラウドから取得</button>
+            <button class="btn" onclick="pushGAS()">↑ クラウドへ保存</button>
+          </div>
+          <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.8;">
+            設定方法：google_apps_script.gs をApps Scriptにデプロイし、発行されたURLを貼り付けてください
+          </div>
+        </section>
+        <section class="card" style="max-width:620px;margin-top:14px;">
+          <div class="ct">データ管理</div>
+          <div class="brow">
+            <button class="btn" onclick="exportData()">JSONエクスポート</button>
+            <button class="btn" onclick="importData()">JSONインポート</button>
+            <button class="btn d" onclick="clearData()">対戦データ全削除</button>
+            <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)">
+          </div>
+        </section>
       </div>
-      <div class="ct">対戦結果</div>
-      <div class="resbts">
-        <button class="resbtn win-btn" id="rbw" onclick="setRes('win')">勝ち ✓</button>
-        <button class="resbtn loss-btn" id="rbl" onclick="setRes('loss')">負け ✗</button>
-      </div>
-      <div class="brow" style="justify-content:space-between">
-        <button class="btn" onclick="goStep(2)">← 戻る</button>
-        <button class="btn s" onclick="saveBattle()">保存する</button>
-      </div>
+
     </div>
-  </div>
+  </main>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="botnav">
+    <button class="botnav-btn active" data-page="party" onclick="gp('party',this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>パーティ</span>
+    </button>
+    <button class="botnav-btn" data-page="battle" onclick="gp('battle',this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="14" x2="9" y2="18"/><line x1="7" y1="17" x2="4" y2="20"/><line x1="3" y1="19" x2="5" y2="21"/></svg>
+      <span>対戦記録</span>
+    </button>
+    <button class="botnav-btn" data-page="stats" onclick="gp('stats',this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M7 16V10M12 16V4M17 16v-6"/></svg>
+      <span>データ</span>
+    </button>
+    <button class="botnav-btn" data-page="calc" onclick="gp('calc',this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 10h.5M11.5 10h.5M15.5 10h.5M8 14h.5M11.5 14h.5M15.5 14h.5M8 18h4"/></svg>
+      <span>計算</span>
+    </button>
+    <button class="botnav-btn" data-page="settings" onclick="gp('settings',this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path fill="currentColor" fill-rule="evenodd" stroke="none" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      <span>設定</span>
+    </button>
+  </nav>
+
 </div>
 
-<!-- STATS -->
-<div id="page-stats" class="page">
-  <div class="sh" id="stat-sum"></div>
-  <div class="pfbar" id="pf-bar"></div>
-  <div class="stabs">
-    <button class="stab active" onclick="showST('pickrate',this)">選出率</button>
-    <button class="stab" onclick="showST('combo',this)">組み合わせ</button>
-    <button class="stab" onclick="showST('winrate',this)">ポケモン別勝率</button>
-    <button class="stab" onclick="showST('history',this)">履歴</button>
-  </div>
-  <div id="st-pickrate">
-    <div class="tc">
-      <div class="card"><div class="ct">自分の選出率</div><div id="my-pick"></div></div>
-      <div class="card"><div class="ct">相手の選出率</div><div id="opp-pick"></div></div>
-    </div>
-    <div class="tc">
-      <div class="card"><div class="ct">自分の先発ペア率</div><div id="my-lead-r"></div></div>
-      <div class="card"><div class="ct">相手の先発ペア率</div><div id="opp-lead-r"></div></div>
-    </div>
-  </div>
-  <div id="st-combo" style="display:none">
-    <div class="card"><div class="ct">自分の先発ペア別勝率（上位5）</div><div id="my-cw-top"></div></div>
-    <div class="card"><div class="ct">自分の先発ペア別勝率（下位5）</div><div id="my-cw-bot"></div></div>
-    <div class="card"><div class="ct">相手の先発ペア別勝率（上位5）</div><div id="opp-cw-top"></div></div>
-    <div class="card"><div class="ct">相手の先発ペア別勝率（下位5）</div><div id="opp-cw-bot"></div></div>
-    <div class="card"><div class="ct">自分先発上位5 × 相手先発上位10</div><div id="cross-c" style="overflow-x:auto"></div></div>
-  </div>
-  <div id="st-winrate" style="display:none">
-    <div class="card"><div class="ct">全データ統合：ポケモン別勝率（自分）</div><div id="my-pwr"></div></div>
-    <div class="card"><div class="ct">全データ統合：ポケモン別勝率（相手）</div><div id="opp-pwr"></div></div>
-  </div>
-  <div id="st-history" style="display:none">
-    <div class="card"><div class="ct">対戦履歴</div><div id="hist-list"></div></div>
-  </div>
+<!-- CSV loading overlay -->
+<div id="csv-loading" style="display:none;position:fixed;inset:0;background:rgba(12,15,20,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <div style="width:40px;height:40px;border:3px solid rgba(255,59,78,.3);border-top-color:#ff3b4e;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="color:var(--text3);font-size:13px;">ポケモンデータを読み込み中...</div>
+</div>
+<div id="csv-error" style="display:none;position:fixed;top:0;left:0;right:0;z-index:400;background:rgba(255,59,78,.15);border-bottom:1px solid rgba(255,59,78,.4);color:var(--loss);padding:10px 14px;font-size:12px;text-align:center;">
+  pokemon_list.csv の読み込みに失敗しました。このHTMLと同じ階層に配置してください。
 </div>
 
-<!-- CALC -->
-<style>
-.cinput{padding:7px 9px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:12px;outline:none;width:100%}
-.cinput:focus{border-color:var(--accent)}
-.cpts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.cpt{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;color:var(--text3)}
-.cnum{width:42px;padding:5px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text1);font-size:13px;text-align:center;outline:none}
-.cnum:focus{border-color:var(--accent)}
-.ctot{font-size:10px;color:var(--text2);margin-left:auto}
-.ctot.over{color:var(--loss);font-weight:600}
-.cgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-@media(max-width:480px){.cgrid2{grid-template-columns:1fr}}
-.cf{display:flex;flex-direction:column;gap:3px}
-.cranks{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px}
-.crk{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:9px;color:var(--text3)}
-.crksel{padding:4px;text-align:center}
-.cmoves{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-.cmoves .slbl{grid-column:1/-1}
-.cfield{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-@media(max-width:480px){.cfield{grid-template-columns:1fr 1fr}}
-.cfield label{display:flex;flex-direction:column;gap:3px}
-.cchecks{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:var(--text2)}
-.cchecks label{display:flex;align-items:center;gap:4px;cursor:pointer}
-.cres{padding:9px 0;border-bottom:1px solid var(--border)}
-.cres:last-child{border-bottom:none}
-.cres-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-.cres-mv{font-size:12px;font-weight:600}
-.cres-dmg{font-size:14px;font-weight:700}
-.cres-bar{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.cres-fill{height:100%;border-radius:3px;transition:width .3s}
-.cres-meta{display:flex;justify-content:space-between;font-size:11px;margin-top:4px}
-.cres-ko{color:var(--text2);font-weight:600}
-.cres-note{font-size:9px;color:var(--text3);margin-top:3px;line-height:1.5}
-.cres.err{color:var(--loss);font-size:11px;padding:6px 0}
-.cdir{font-size:12px;font-weight:700;color:var(--text2);margin:14px 2px 7px;display:flex;align-items:center;gap:7px}
-.cdir:first-child{margin-top:2px}
-</style>
-<div id="page-calc" class="page">
-  <div class="card" id="calc-atk" data-role="atk-card"></div>
-  <div class="card" id="calc-def" data-role="def-card"></div>
-  <div class="card" id="calc-field">
-    <div class="ct">場の条件</div>
-    <div class="cfield">
-      <label><span class="slbl">ルール</span><select id="cf-gametype" class="cinput"><option value="Doubles">ダブル</option><option value="Singles">シングル</option></select></label>
-      <label><span class="slbl">天候</span><select id="cf-weather" class="cinput"><option value="">なし</option><option>はれ</option><option>あめ</option><option>すなあらし</option><option>ゆき</option></select></label>
-      <label><span class="slbl">フィールド</span><select id="cf-terrain" class="cinput"><option value="">なし</option><option>エレキ</option><option>グラス</option><option>ミスト</option><option>サイコ</option></select></label>
-    </div>
-    <div class="cchecks">
-      <label><input type="checkbox" id="cf-reflect">リフレクター</label>
-      <label><input type="checkbox" id="cf-lightscreen">ひかりのかべ</label>
-      <label><input type="checkbox" id="cf-hh">てだすけ</label>
-      <label><input type="checkbox" id="cf-crit">急所</label>
-    </div>
-  </div>
-  <div class="card">
-    <div class="ct">結果（攻撃側 → 防御側）</div>
-    <div id="calc-result"><div class="empty">攻撃側・防御側・技を設定してください</div></div>
-  </div>
-</div>
-<datalist id="dl-ability"></datalist>
-<datalist id="dl-item"></datalist>
-<datalist id="dl-move"></datalist>
-
-<!-- SETTINGS -->
-<div id="page-settings" class="page">
-  <div class="card">
-    <div class="ct">クラウド同期（Google スプレッドシート）</div>
-    <div id="nbar" class="nbar idle">未設定</div>
-    <label class="slbl">Apps Script URL</label>
-    <input type="text" class="sinput" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" oninput="saveSet()" autocomplete="off">
-    <div class="brow">
-      <button class="btn p" onclick="testGAS()">接続テスト</button>
-      <button class="btn" onclick="pullGAS()">↓ クラウドから取得</button>
-      <button class="btn" onclick="pushGAS()">↑ クラウドへ保存</button>
-    </div>
-    <div style="margin-top:12px;font-size:10px;color:var(--text3);line-height:1.8">
-      設定方法：google_apps_script.gs の内容をApps Scriptにデプロイし、発行されたURLを上に貼り付けてください
-    </div>
-  </div>
-  <div class="card">
-    <div class="ct">データ管理</div>
-    <div class="brow">
-      <button class="btn" onclick="exportData()">JSONエクスポート</button>
-      <button class="btn" onclick="importData()">JSONインポート</button>
-      <button class="btn d" onclick="clearData()">対戦データ全削除</button>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
-    </div>
-  </div>
-</div>
-
-<!-- MODAL -->
-<!-- CSV loading state UI -->
-<div id="csv-loading" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
-  <div style="width:40px;height:40px;border:3px solid rgba(91,127,255,.3);border-top-color:#5b7fff;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-  <div style="color:#8b93b8;font-size:13px;">ポケモンデータを読み込み中...</div>
-</div>
-<div id="csv-error" style="display:none;position:fixed;top:0;left:0;right:0;z-index:400;background:rgba(239,68,68,.15);border-bottom:1px solid rgba(239,68,68,.4);color:#ef4444;padding:10px 14px;font-size:12px;text-align:center;">
-  ⚠️ pokemon_list.csv の読み込みに失敗しました。このHTMLと同じ階層に pokemon_list.csv を配置してください。
-</div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-
-<div id="modal" style="display:none" class="moverlay" onclick="if(event.target===this)cm()">
+<!-- Pokemon modal -->
+<div id="modal" style="display:none;" class="moverlay" onclick="if(event.target===this)cm()">
   <div class="modal">
     <h3 id="m-title">ポケモンを選択</h3>
     <input type="text" id="m-input" placeholder="日本語・英語・図鑑番号で検索" autocomplete="off">
@@ -391,958 +273,46 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var
   </div>
 </div>
 
-<!-- BUILD EDITOR MODAL (育成データ) -->
-<div id="build-modal" style="display:none" class="moverlay" onclick="if(event.target===this)closeBuildEditor()">
+<!-- Build editor modal -->
+<div id="build-modal" style="display:none;" class="moverlay" onclick="if(event.target===this)closeBuildEditor()">
   <div class="modal">
     <h3 id="bm-title">育成データ</h3>
-    <div class="mlist" id="bm-body" style="flex:1"><div class="mloading">読み込み中...</div></div>
-    <div class="brow" style="margin-top:8px">
-      <button class="btn p" style="flex:1;justify-content:center" onclick="saveBuild()">保存</button>
-      <button class="btn" style="flex:1;justify-content:center" onclick="closeBuildEditor()">キャンセル</button>
+    <div class="mlist" id="bm-body" style="flex:1;"><div class="mloading">読み込み中...</div></div>
+    <div class="brow" style="margin-top:8px;">
+      <button class="btn p" style="flex:1;justify-content:center;" onclick="saveBuild()">保存</button>
+      <button class="btn" style="flex:1;justify-content:center;" onclick="closeBuildEditor()">キャンセル</button>
     </div>
   </div>
 </div>
 
-<!-- PARTY PICKER MODAL (計算機へ育成データ呼び出し F2) -->
-<div id="party-pick-modal" style="display:none" class="moverlay" onclick="if(event.target===this)closePartyPick()">
+<!-- Party picker modal -->
+<div id="party-pick-modal" style="display:none;" class="moverlay" onclick="if(event.target===this)closePartyPick()">
   <div class="modal">
     <h3 id="pp-title">パーティから選ぶ</h3>
-    <div class="mlist" id="pp-body" style="flex:1"><div class="mloading">読み込み中...</div></div>
+    <div class="mlist" id="pp-body" style="flex:1;"><div class="mloading">読み込み中...</div></div>
     <button class="mclose" onclick="closePartyPick()">キャンセル</button>
   </div>
 </div>
 
-<script>
-// ===== CSV LOADER =====
-// pokemon_list.csv format:
-//   no,name,type1,type2,sprite_override,sprite_url,yakkun_url
-// Place pokemon_list.csv in the same directory as this HTML file.
-// GitHub Pages will serve both files; on every page load we fetch
-// the CSV fresh (cache-busted) so any CSV update is picked up
-// automatically without changing this HTML.
+<script src="js/state.js"></script>
+<script src="js/party.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/build.js"></script>
+<script src="js/main.js"></script>
 
-async function loadPokeCSV() {
-  const loading = document.getElementById('csv-loading');
-  const errBanner = document.getElementById('csv-error');
-  if (loading) loading.style.display = 'flex';
-  try {
-    // ?v=timestamp busts the browser cache so GitHub Pages CDN changes are seen immediately
-    const res = await fetch('./pokemon_list.csv?v=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-
-    POKE_DB = parseCSVtoDB(text);
-
-    // Rebuild lookup tables
-    for (const k in BY_EN) delete BY_EN[k];
-    for (const k in BY_JA) delete BY_JA[k];
-    POKE_DB.forEach(r => {
-      BY_EN[r[1]] = r;   // key = Japanese name (stored as identifier in localStorage)
-      BY_JA[r[1]] = r;
-    });
-
-    console.log('pokemon_list.csv loaded:', POKE_DB.length, 'entries');
-  } catch (e) {
-    console.error('pokemon_list.csv load failed:', e);
-    if (errBanner) errBanner.style.display = 'block';
-  } finally {
-    if (loading) loading.style.display = 'none';
-  }
-}
-
-function parseCSVtoDB(text) {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/\r/g, ''));
-  return lines.slice(1).map(line => {
-    // Handle quoted fields
-    const cols = [];
-    let cur = '', inQ = false;
-    for (const ch of (line.replace(/\r/g, ''))) {
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
-      else cur += ch;
-    }
-    cols.push(cur);
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = (cols[i] || '').trim(); });
-
-    const no = parseInt(obj.no);
-    if (isNaN(no)) return null;
-    const types = [obj.type1, obj.type2].filter(Boolean);
-    const sid = obj.sprite_override || String(no);
-    const spriteUrl = obj.sprite_url ||
-      `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.png`;
-    const yakkunUrl = obj.yakkun_url || `https://yakkun.com/sv/zukan/n${no}`;
-    // [no, name_ja, key(=name_ja), types[], spriteUrl, yakkunUrl]
-    return [no, obj.name, obj.name, types, spriteUrl, yakkunUrl];
-  }).filter(Boolean);
-}
-
-
-// ===== TYPE COLORS =====
-const TC={ノーマル:'#9FA19F',ほのお:'#E62829',みず:'#2980EF',でんき:'#FAC000',くさ:'#3FA129',こおり:'#3DCEF3',かくとう:'#FF8000',どく:'#9141CB',じめん:'#915121',ひこう:'#81B9EF',エスパー:'#EF4179',むし:'#91A119',いわ:'#AFA981',ゴースト:'#704170',ドラゴン:'#5060E1',あく:'#624D4E',はがね:'#60A1B8',フェアリー:'#EF70EF'};
-
-// ===== LOOKUP =====
-// POKE_DB: [no, name_ja, key, [types], sprite_url, yakkun_url]
-// Populated at startup by loadPokeCSV()
-let POKE_DB = [];
-const BY_EN={}, BY_JA={};
-function getPoke(name_en){ return BY_EN[name_en]||null; }
-function typeHtml(types){
-  return (types||[]).map(t=>`<span class="tbadge" style="background:${TC[t]}22;color:${TC[t]}">${t}</span>`).join('');
-}
-function imgUrl(name_en){
-  const r=getPoke(name_en); return r?r[4]:'';
-}
-
-// ===== STATE =====
-let S = (()=>{try{return JSON.parse(localStorage.getItem('pb3')||'null')}catch{return null}})() || {
-  parties:[{id:'p1',name:'パーティ1',pokemon:[]}],
-  activeParty:'p1',
-  battles:[]
-};
-// GAS URLはlocalStorageに別管理（エクスポートに含めない）
-function getGasUrl(){return localStorage.getItem('gas_url')||''}
-function save(){localStorage.setItem('pb3',JSON.stringify(S))}
-function getAP(){return S.parties.find(p=>p.id===S.activeParty)||S.parties[0]}
-
-// ===== 育成データ移行(F4): pokemon配列の要素を「文字列」→「{name,points,...}」へ正規化 =====
-function pname(x){return x&&typeof x==='object'?x.name:x}            // 名前を取り出す(文字列/オブジェクト両対応)
-function pbuild(x){return x&&typeof x==='object'?x:{name:x}}          // オブジェクト化(育成データ参照用)
-function hasBuild(it){
-  if(!it||typeof it!=='object')return false;
-  const ptOn=it.points&&HK.some(k=>(it.points[k]||0)>0);
-  return !!(ptOn||it.ability||it.item||(it.tera)||(it.moves&&it.moves.some(Boolean))||(it.nature&&it.nature!=='まじめ'));
-}
-function migrateParties(){
-  let changed=0;
-  (S.parties||[]).forEach(p=>{
-    if(!Array.isArray(p.pokemon))return;
-    p.pokemon=p.pokemon.map(x=>{ if(x&&typeof x==='object')return x; changed++; return {name:x}; });
-  });
-  if(changed){console.log('[party] migrated '+changed+' pokemon to object form');save()}
-}
-
-let oppParty=[], mySel={lead:[],back:[]}, oppSel={lead:[],back:[]}, battleRes=null, curStep=1, statFilter='all';
-let modalCB=null;
-
-// ===== MODAL =====
-function openModal(title,cb){
-  modalCB=cb;
-  document.getElementById('m-title').textContent=title;
-  document.getElementById('m-input').value='';
-  document.getElementById('modal').style.display='flex';
-  setTimeout(()=>document.getElementById('m-input').focus(),100);
-  filterM('');
-}
-function cm(){document.getElementById('modal').style.display='none'}
-document.getElementById('m-input').addEventListener('input',function(){filterM(this.value)});
-function filterM(q){
-  q=q.trim().toLowerCase();
-  const el=document.getElementById('m-list');
-  let matches;
-  if(!q) matches=POKE_DB.slice(0,60);
-  else matches=POKE_DB.filter(r=>
-    r[1].includes(q)||r[2].includes(q)||String(r[0]).includes(q)
-  ).slice(0,50);
-  if(!matches.length){el.innerHTML='<div class="mloading">見つかりません</div>';return}
-  el.innerHTML='';
-  matches.forEach(r=>{
-    const [no,ja,en,types,url,yakkun]=r;
-    const div=document.createElement('div');
-    div.className='mitem';
-    div.innerHTML=`<img src="${url}" onerror="this.style.opacity=0" loading="lazy">
-      <div class="mitem-info">
-        <div class="mitem-name">${ja} <span style="color:var(--text3);font-size:9px">No.${no} ${en}</span></div>
-        <div class="mitem-types">${typeHtml(types)}</div>
-      </div>
-      <a href="${yakkun}" target="_blank" onclick="event.stopPropagation()">ポケ徹で確認↗</a>`;
-    div.onclick=()=>{modalCB&&modalCB(en);cm()};
-    el.appendChild(div);
-  });
-}
-
-// ===== PARTY PAGE =====
-function renderPTabs(){
-  const el=document.getElementById('ptab-list');
-  el.innerHTML='';
-  S.parties.forEach(p=>{
-    const b=document.createElement('button');
-    b.className='ptab'+(p.id===S.activeParty?' active':'');
-    b.textContent=p.name;
-    b.ondblclick=()=>{const n=prompt('パーティ名',p.name);if(n){p.name=n;save();renderPTabs();renderPartySlots()}};
-    b.onclick=()=>{S.activeParty=p.id;save();renderPTabs();renderPartySlots();renderBattleMyParty()};
-    el.appendChild(b);
-  });
-}
-function renderPartySlots(){
-  const p=getAP();
-  document.getElementById('party-edit-title').textContent=`${p.name}を編集（ポケモンをタップで育成データ）`;
-  const el=document.getElementById('party-slots');
-  el.innerHTML='';
-  for(let i=0;i<6;i++){
-    const it=p.pokemon[i];
-    const en=pname(it);
-    const slot=document.createElement('div');
-    slot.className='pslot'+(en?'':' empty');
-    slot.innerHTML=`<span class="snum">${i+1}</span>`;
-    if(en){
-      const r=getPoke(en)||{};
-      slot.innerHTML+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sname">${r[1]||en}</div><div style="display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center">${typeHtml(r[3])}</div><button class="rx" onclick="rmParty(event,${i})">×</button>${hasBuild(it)?'<span class="bdot" title="育成データあり"></span>':''}`;
-      slot.onclick=(e)=>{if(e.target.classList.contains('rx'))return;openBuildEditor(i)};
-    }else{
-      slot.innerHTML+=`<div style="font-size:18px;color:var(--text3);margin:8px 0">＋</div><div class="sname" style="color:var(--text3)">追加</div>`;
-      slot.onclick=()=>openModal(`スロット${i+1}`,n=>setPartySlot(i,n));
-    }
-    el.appendChild(slot);
-  }
-}
-function setPartySlot(i,en){
-  const p=getAP();
-  if(p.pokemon.some(x=>pname(x)===en)){alert(`${getPoke(en)?.[1]||en}はすでに登録されています`);return}
-  p.pokemon[i]={name:en};
-  while(p.pokemon.length>0&&!p.pokemon[p.pokemon.length-1])p.pokemon.pop();
-  save();renderPartySlots();renderBattleMyParty();
-}
-function rmParty(e,i){
-  e.stopPropagation();const p=getAP();p.pokemon.splice(i,1);save();renderPartySlots();renderBattleMyParty();
-}
-function addParty(){
-  const n=prompt('新しいパーティ名',`パーティ${S.parties.length+1}`);if(!n)return;
-  const id='p'+Date.now();S.parties.push({id,name:n,pokemon:[]});S.activeParty=id;save();renderPTabs();renderPartySlots();
-}
-function delParty(){
-  if(S.parties.length<=1){alert('最後のパーティは削除できません');return}
-  if(!confirm(`「${getAP().name}」を削除しますか？（対戦データも削除）`))return;
-  S.battles=S.battles.filter(b=>b.partyId!==S.activeParty);
-  S.parties=S.parties.filter(p=>p.id!==S.activeParty);
-  S.activeParty=S.parties[0].id;save();renderPTabs();renderPartySlots();
-}
-
-// ===== BATTLE PAGE =====
-function renderBattleMyParty(){
-  const p=getAP();const el=document.getElementById('battle-my-party');el.innerHTML='';
-  for(let i=0;i<6;i++){
-    const en=pname(p.pokemon[i]);const slot=document.createElement('div');
-    slot.className='pslot'+(en?'':' empty');slot.style.pointerEvents='none';
-    slot.innerHTML=`<span class="snum">${i+1}</span>`;
-    if(en){const r=getPoke(en)||{};slot.innerHTML+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sname">${r[1]||en}</div>`;}
-    else slot.innerHTML+=`<div class="sname" style="color:var(--text3)">空き</div>`;
-    el.appendChild(slot);
-  }
-}
-function renderOppSlots(){
-  const el=document.getElementById('opp-party-slots');el.innerHTML='';
-  for(let i=0;i<6;i++){
-    const en=oppParty[i];const slot=document.createElement('div');
-    slot.className='pslot'+(en?'':' empty');
-    slot.innerHTML=`<span class="snum">${i+1}</span>`;
-    if(en){
-      const r=getPoke(en)||{};
-      slot.innerHTML+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sname">${r[1]||en}</div><div style="display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center">${typeHtml(r[3])}</div><button class="rx" onclick="rmOpp(event,${i})">×</button>`;
-      slot.onclick=(e)=>{if(e.target.classList.contains('rx'))return;openModal(`スロット${i+1}(相手)`,n=>setOppSlot(i,n))};
-    }else{
-      slot.innerHTML+=`<div style="font-size:18px;color:var(--text3);margin:8px 0">＋</div><div class="sname" style="color:var(--text3)">追加</div>`;
-      slot.onclick=()=>openModal(`スロット${i+1}(相手)`,n=>setOppSlot(i,n));
-    }
-    el.appendChild(slot);
-  }
-}
-function setOppSlot(i,en){
-  if(oppParty.includes(en)){alert(`${getPoke(en)?.[1]||en}はすでに登録されています`);return}
-  oppParty[i]=en;renderOppSlots();
-}
-function rmOpp(e,i){e.stopPropagation();oppParty.splice(i,1);renderOppSlots()}
-
-function renderSelGrid(party,elId,sel){
-  const el=document.getElementById(elId);el.innerHTML='';
-  party.filter(Boolean).forEach(en=>{
-    const r=getPoke(en)||{};
-    const isL=sel.lead.includes(en),isB=sel.back.includes(en);
-    const btn=document.createElement('button');
-    btn.className='selbtn'+(isL?' lead':isB?' back':'');
-    btn.innerHTML=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div class="sl">${isL?'先発':isB?'後発':r[1]||en}</div><div style="display:flex;gap:2px;justify-content:center;flex-wrap:wrap">${typeHtml(r[3])}</div>`;
-    btn.onclick=()=>{toggleSel(en,party,elId,sel)};
-    el.appendChild(btn);
-  });
-}
-function toggleSel(en,party,elId,sel){
-  if(sel.lead.includes(en))sel.lead=sel.lead.filter(x=>x!==en);
-  else if(sel.back.includes(en))sel.back=sel.back.filter(x=>x!==en);
-  else if(sel.lead.length<2)sel.lead.push(en);
-  else if(sel.back.length<2)sel.back.push(en);
-  renderSelGrid(party,elId,sel);
-}
-function renderConfirm(){
-  [['my-confirm',mySel],['opp-confirm',oppSel]].forEach(([id,sel])=>{
-    const el=document.getElementById(id);el.innerHTML='';
-    [['先発',sel.lead,'cplead'],['後発',sel.back,'cpback']].forEach(([pos,arr,cls])=>{
-      arr.forEach(en=>{
-        const r=getPoke(en)||{};
-        const d=document.createElement('div');d.className='cpoke';
-        d.innerHTML=`<span class="cpos ${cls}">${pos}</span><img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div><div style="font-size:11px">${r[1]||en}</div><div style="display:flex;gap:2px;margin-top:1px">${typeHtml(r[3])}</div></div>`;
-        el.appendChild(d);
-      });
-    });
-  });
-}
-function goStep(n){
-  if(n===2&&oppParty.filter(Boolean).length<1){alert('相手のポケモンを最低1匹入力してください');return}
-  if(n===3){
-    if(mySel.lead.length+mySel.back.length<4){alert('自分の選出を4匹選んでください（先発2→後発2）');return}
-    if(oppSel.lead.length+oppSel.back.length<4){alert('相手の選出を4匹選んでください（先発2→後発2）');return}
-    renderConfirm();
-  }
-  curStep=n;
-  ['bs1','bs2','bs3'].forEach((id,i)=>{document.getElementById(id).style.display=i===n-1?'block':'none'});
-  document.querySelectorAll('.sdot').forEach((d,i)=>{d.className='sdot'+(i<n-1?' done':i===n-1?' active':'')});
-  document.getElementById('slabel').textContent=['ステップ 1：相手のパーティを記録','ステップ 2：選出を選ぶ','ステップ 3：結果を記録'][n-1];
-  if(n===2){
-    const myP=getAP().pokemon.filter(Boolean).map(pname);
-    renderSelGrid(myP,'my-sel-grid',mySel);
-    renderSelGrid(oppParty.filter(Boolean),'opp-sel-grid',oppSel);
-  }
-}
-function setRes(r){battleRes=r;document.getElementById('rbw').classList.toggle('sel',r==='win');document.getElementById('rbl').classList.toggle('sel',r==='loss')}
-function saveBattle(){
-  if(!battleRes){alert('勝敗を選択してください');return}
-  const p=getAP();
-  const b={id:Date.now(),date:new Date().toISOString(),partyId:p.id,partyName:p.name,result:battleRes,myLead:[...mySel.lead],myBack:[...mySel.back],oppLead:[...oppSel.lead],oppBack:[...oppSel.back],oppParty:[...oppParty.filter(Boolean)]};
-  S.battles.unshift(b);save();
-  if(getGasUrl())pushGAS(true);
-  alert('記録しました！');resetBattle();
-}
-function resetBattle(){oppParty=[];mySel={lead:[],back:[]};oppSel={lead:[],back:[]};battleRes=null;renderOppSlots();goStep(1)}
-
-// ===== STATS =====
-function renderPFBar(){
-  const el=document.getElementById('pf-bar');el.innerHTML='';
-  const ab=document.createElement('button');ab.className='pfbtn'+(statFilter==='all'?' active':'');ab.textContent='全パーティ';ab.onclick=()=>{statFilter='all';renderPFBar();renderStats()};el.appendChild(ab);
-  S.parties.forEach(p=>{const b=document.createElement('button');b.className='pfbtn'+(statFilter===p.id?' active':'');b.textContent=p.name;b.onclick=()=>{statFilter=p.id;renderPFBar();renderStats()};el.appendChild(b)});
-}
-function getFB(){return statFilter==='all'?S.battles:S.battles.filter(b=>b.partyId===statFilter)}
-function renderStats(){
-  const bs=getFB(),wins=bs.filter(b=>b.result==='win').length,total=bs.length,pct=total?Math.round(wins/total*100):0;
-  document.getElementById('stat-sum').innerHTML=`<div class="sc"><div class="val">${total}</div><div class="lbl">対戦数</div></div><div class="sc"><div class="val" style="color:var(--win)">${wins}</div><div class="lbl">勝利数</div><div class="sub">${wins}/${total}</div></div><div class="sc"><div class="val" style="color:${pct>=50?'var(--win)':'var(--loss)'}">${pct}%</div><div class="lbl">勝率</div></div>`;
-  renderPickRates(bs);renderComboStats(bs);renderPokeWR();renderHist(bs);
-}
-function renderPickRates(bs){
-  rpRate('my-pick',bs,b=>[...b.myLead,...b.myBack],bs.length,false);
-  rpRate('opp-pick',bs,b=>[...b.oppLead,...b.oppBack],bs.length,false);
-  rpRate('my-lead-r',bs,b=>b.myLead.length>=2?[b.myLead.slice().sort().join('＋')]:[], bs.length,true);
-  rpRate('opp-lead-r',bs,b=>b.oppLead.length>=2?[b.oppLead.slice().sort().join('＋')]:[], bs.length,true);
-}
-function rpRate(id,bs,ex,total,isPair){
-  const c={};bs.forEach(b=>ex(b).forEach(k=>{c[k]=(c[k]||0)+1}));
-  const sorted=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,isPair?5:12);
-  const el=document.getElementById(id);if(!sorted.length){el.innerHTML='<div class="empty">データなし</div>';return}
-  el.innerHTML='';
-  sorted.forEach(([name,cnt])=>{
-    const pct=Math.round(cnt/total*100);const div=document.createElement('div');div.className='rr';
-    if(!isPair){
-      const r=getPoke(name)||{};
-      div.innerHTML=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><span class="nm">${r[1]||name}</span><div style="display:flex;gap:2px;flex-shrink:0">${typeHtml(r[3])}</div><div class="rbwrap"><div class="rbar" style="width:${pct}%;background:var(--accent)"></div></div><span class="rval">${pct}%</span>`;
-    }else{
-      const parts=name.split('＋');let imgs='';
-      parts.forEach(en=>{const r=getPoke(en)||{};imgs+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy" style="width:26px;height:26px;object-fit:contain;image-rendering:pixelated">`});
-      div.innerHTML=`<div class="ppair">${imgs}</div><span class="nm" style="font-size:9px">${name}</span><div class="rbwrap"><div class="rbar" style="width:${pct}%;background:var(--accent)"></div></div><span class="rval">${pct}%</span>`;
-    }
-    el.appendChild(div);
-  });
-}
-function renderComboStats(bs){
-  cwRate('my-cw-top',bs,'my',true,5);cwRate('my-cw-bot',bs,'my',false,5);
-  cwRate('opp-cw-top',bs,'opp',true,5);cwRate('opp-cw-bot',bs,'opp',false,5);
-  renderCross(bs);
-}
-function cwRate(id,bs,side,top,limit){
-  const stats={};
-  bs.forEach(b=>{const lead=side==='my'?b.myLead:b.oppLead;if(lead.length<2)return;const k=lead.slice().sort().join('＋');if(!stats[k])stats[k]={w:0,t:0};stats[k].t++;if(b.result==='win')stats[k].w++});
-  const sorted=Object.entries(stats).filter(([,v])=>v.t>=1).map(([k,v])=>({key:k,rate:v.w/v.t,t:v.t,w:v.w})).sort((a,b)=>top?b.rate-a.rate:a.rate-b.rate).slice(0,limit);
-  const el=document.getElementById(id);if(!sorted.length){el.innerHTML='<div class="empty">データなし</div>';return}
-  el.innerHTML='';
-  sorted.forEach(item=>{
-    const parts=item.key.split('＋'),pct=Math.round(item.rate*100),col=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--accent)';
-    const div=document.createElement('div');div.className='cr';
-    let imgs='';parts.forEach(en=>{const r=getPoke(en)||{};imgs+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy">`});
-    div.innerHTML=`<div class="ppair">${imgs}</div><span style="font-size:10px;flex:1">${item.key}</span><div class="wrbw"><div class="wrb" style="width:${pct}%;background:${col}"></div></div><span class="wrv" style="color:${col}">${pct}% (${item.w}/${item.t})</span>`;
-    el.appendChild(div);
-  });
-}
-function renderCross(bs){
-  const myLC={},oppLC={};
-  bs.forEach(b=>{if(b.myLead.length>=2){const k=b.myLead.slice().sort().join('＋');myLC[k]=(myLC[k]||0)+1}if(b.oppLead.length>=2){const k=b.oppLead.slice().sort().join('＋');oppLC[k]=(oppLC[k]||0)+1}});
-  const myTop=Object.entries(myLC).sort((a,b)=>b[1]-a[1]).slice(0,5).map(e=>e[0]);
-  const oppTop=Object.entries(oppLC).sort((a,b)=>b[1]-a[1]).slice(0,10).map(e=>e[0]);
-  const el=document.getElementById('cross-c');
-  if(!myTop.length||!oppTop.length){el.innerHTML='<div class="empty">データなし</div>';return}
-  let html=`<table class="xtable"><thead><tr><th>自分↓ / 相手→</th>`;
-  oppTop.forEach(ok=>html+=`<th>${ok.replace('＋','<br>')}</th>`);html+='</tr></thead><tbody>';
-  myTop.forEach(mk=>{
-    html+=`<tr><th>${mk.replace('＋','<br>')}</th>`;
-    oppTop.forEach(ok=>{
-      const m=bs.filter(b=>b.myLead.slice().sort().join('＋')===mk&&b.oppLead.slice().sort().join('＋')===ok);
-      if(!m.length){html+='<td style="color:var(--text3)">-</td>';return}
-      const w=m.filter(b=>b.result==='win').length,pct=Math.round(w/m.length*100);
-      const bg=pct>=60?'rgba(34,197,94,.15)':pct<=40?'rgba(239,68,68,.12)':'';
-      const tc=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--text1)';
-      html+=`<td style="background:${bg};color:${tc};font-weight:600">${pct}%<br><span style="font-size:8px;color:var(--text3)">${w}/${m.length}</span></td>`;
-    });html+='</tr>';
-  });
-  el.innerHTML=html+'</tbody></table>';
-}
-function renderPokeWR(){
-  pokeWR('my-pwr',S.battles,'my');pokeWR('opp-pwr',S.battles,'opp');
-}
-function pokeWR(id,bs,side){
-  const stats={};
-  bs.forEach(b=>{
-    const pokes=side==='my'?[...b.myLead,...b.myBack]:[...b.oppLead,...b.oppBack];
-    pokes.forEach(en=>{if(!stats[en])stats[en]={w:0,t:0};stats[en].t++;if(b.result==='win')stats[en].w++});
-  });
-  const sorted=Object.entries(stats).map(([k,v])=>({en:k,rate:v.w/v.t,t:v.t,w:v.w})).sort((a,b)=>b.rate-a.rate);
-  const el=document.getElementById(id);if(!sorted.length){el.innerHTML='<div class="empty">データなし</div>';return}
-  el.innerHTML='';
-  sorted.forEach(item=>{
-    const r=getPoke(item.en)||{},pct=Math.round(item.rate*100),col=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--text1)';
-    const div=document.createElement('div');div.className='pwr';
-    div.innerHTML=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy"><div style="flex:1"><div style="font-size:11px">${r[1]||item.en}</div><div style="display:flex;gap:2px;margin-top:2px">${typeHtml(r[3])}</div></div><div class="wrbw" style="max-width:80px"><div class="wrb" style="width:${pct}%;background:${col}"></div></div><span style="font-size:10px;color:${col};min-width:54px;text-align:right">${pct}% (${item.w}/${item.t})</span>`;
-    el.appendChild(div);
-  });
-}
-function renderHist(bs){
-  const el=document.getElementById('hist-list');
-  if(!bs.length){el.innerHTML='<div class="empty">対戦記録なし</div>';return}
-  el.innerHTML='';
-  bs.slice(0,40).forEach(b=>{
-    const d=new Date(b.date),ds=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const div=document.createElement('div');div.className='hr';
-    let mi='',oi='';
-    [...b.myLead,...b.myBack].forEach(en=>{const r=getPoke(en)||{};mi+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy" style="width:24px;height:24px;object-fit:contain;image-rendering:pixelated" title="${r[1]||en}">`});
-    [...b.oppLead,...b.oppBack].forEach(en=>{const r=getPoke(en)||{};oi+=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy" style="width:24px;height:24px;object-fit:contain;image-rendering:pixelated" title="${r[1]||en}">`});
-    div.innerHTML=`<span style="font-size:9px;color:var(--text3);min-width:48px">${ds}</span><span class="badge ${b.result==='win'?'bw':'bl'}">${b.result==='win'?'勝':'負'}</span><span style="font-size:9px;color:var(--text3)">${b.partyName||''}</span><div style="display:flex;gap:1px">${mi}</div><span style="font-size:9px;color:var(--text3)">vs</span><div style="display:flex;gap:1px">${oi}</div>`;
-    el.appendChild(div);
-  });
-}
-function showST(tab,btn){
-  ['pickrate','combo','winrate','history'].forEach(t=>document.getElementById('st-'+t).style.display=t===tab?'block':'none');
-  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-}
-
-// ===== PAGE NAV =====
-function gp(p,btn){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  if(btn)btn.classList.add('active');
-  if(p==='party'){renderPTabs();renderPartySlots()}
-  if(p==='battle'){renderBattleMyParty();renderOppSlots()}
-  if(p==='stats'){renderPFBar();renderStats()}
-  if(p==='calc'){openCalc()}
-  if(p==='settings'){loadSet()}
-}
-
-// ===== SETTINGS =====
-function loadSet(){
-  const u=getGasUrl();
-  document.getElementById('gas-url').value=u;
-  updateNBar();
-}
-function saveSet(){
-  const u=document.getElementById('gas-url').value.trim();
-  u?localStorage.setItem('gas_url',u):localStorage.removeItem('gas_url');
-  save();updateNBar();
-}
-function updateNBar(){
-  const el=document.getElementById('nbar');
-  if(getGasUrl()){el.className='nbar ok';el.textContent='設定済み（自動同期）'}
-  else{el.className='nbar idle';el.textContent='未設定'}
-}
-async function testGAS(){
-  const url=getGasUrl();
-  if(!url){alert('Apps Script URLを入力してください');return}
-  const el=document.getElementById('nbar');el.className='nbar idle';el.textContent='テスト中...';
-  try{
-    const r=await fetch(url+'?action=ping');
-    const j=await r.json();
-    if(j.ok){el.className='nbar ok';el.textContent='接続成功！'}
-    else{el.className='nbar ng';el.textContent='接続失敗：'+j.error}
-  }catch(e){el.className='nbar ng';el.textContent='ネットワークエラー'}
-}
-async function pushGAS(silent=false){
-  const url=getGasUrl();if(!url)return;
-  try{
-    const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'push',data:S})});
-    const j=await r.json();
-    if(!silent){j.ok?alert('クラウドに保存しました'):alert('失敗：'+j.error)}
-  }catch(e){if(!silent)alert('ネットワークエラー')}
-}
-async function pullGAS(){
-  const url=getGasUrl();if(!url){alert('Apps Script URLを設定してください');return}
-  if(!confirm('クラウドのデータで上書きしますか？（ローカルの変更は失われます）'))return;
-  try{
-    const r=await fetch(url+'?action=pull');
-    const j=await r.json();
-    if(j.ok&&j.data){S=j.data;migrateParties();save();renderPTabs();renderPartySlots();renderStats();alert('取得しました')}
-    else alert('失敗：'+(j.error||'データなし'))
-  }catch(e){alert('ネットワークエラー')}
-}
-function importData(){document.getElementById('import-file').click()}
-function handleImport(e){
-  const f=e.target.files[0];if(!f)return;
-  const rd=new FileReader();
-  rd.onload=ev=>{
-    try{
-      const d=JSON.parse(ev.target.result);
-      if(!d.battles)throw new Error('形式エラー');
-      if(!confirm(`${d.battles.length}件の対戦データをインポートします（現在のデータに追加）`))return;
-      const ids=new Set(S.battles.map(b=>b.id));
-      d.battles.forEach(b=>{if(!ids.has(b.id))S.battles.push(b)});
-      S.battles.sort((a,b)=>b.id-a.id);
-      save();renderStats();alert('インポート完了');
-    }catch(ex){alert('読み込み失敗：'+ex.message)}
-  };
-  rd.readAsText(f);e.target.value='';
-}
-function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='battle_data.json';a.click()}
-function clearData(){if(!confirm('対戦データを全削除しますか？'))return;S.battles=[];save();renderStats();alert('削除しました')}
-
-// ===== DAMAGE CALC (Champions) =====
-// calcEngine: pure logic (depends on CALC.gen + dicts, NO DOM). renderCalc/UI below.
-const CALC = { ready:false, loading:false, built:false, gen:null, dict:null, overlay:null };
-const calcState = { atk:{species:'',mega:''}, def:{species:'',mega:''} };
-const TYPE_JA_EN={ノーマル:'Normal',ほのお:'Fire',みず:'Water',でんき:'Electric',くさ:'Grass',こおり:'Ice',かくとう:'Fighting',どく:'Poison',じめん:'Ground',ひこう:'Flying',エスパー:'Psychic',むし:'Bug',いわ:'Rock',ゴースト:'Ghost',ドラゴン:'Dragon',あく:'Dark',はがね:'Steel',フェアリー:'Fairy'};
-const WEATHER_JA_EN={はれ:'Sun',あめ:'Rain',すなあらし:'Sand',ゆき:'Snow'};
-const TERRAIN_JA_EN={エレキ:'Electric',グラス:'Grassy',ミスト:'Misty',サイコ:'Psychic'};
-const SK=['hp','atk','def','spa','spd','spe'], HK=['H','A','B','C','D','S'];
-function whenSmogon(){return new Promise(r=>{if(window.SMOGON)return r(window.SMOGON);addEventListener('smogon-ready',()=>r(window.SMOGON),{once:true})})}
-function mapHK(o){const out={};HK.forEach((k,i)=>out[SK[i]]=o[k]);return out}
-
-// nature -> which stat is +10% / -10% (engine knows). neutral -> {}
-function natModStats(natureJa){
-  const en=CALC.dict.natures[natureJa]; if(!en)return{};
-  const n=CALC.gen.natures.get(window.SMOGON.toID(en)); if(!n||n.plus===n.minus)return{};
-  return {plus:n.plus,minus:n.minus};
-}
-// Champions stat formula (Lv50, IV31, points 0-32). nature baked into final value.
-function computeChampStats(base, pts, natureJa){
-  const {plus,minus}=natModStats(natureJa), out={};
-  SK.forEach((s,i)=>{
-    const b=base[s], p=pts[HK[i]]||0, core=Math.floor((b*2+31+p*2)*50/100);
-    if(s==='hp'){ out[s]= b===1?1: core+60; }
-    else { const m=(plus===s)?1.1:(minus===s)?0.9:1; out[s]=Math.floor((core+5)*m); }
-  });
-  return out;
-}
-// R1: inject final stats as overrides.baseStats with neutral nature/IV31/EV0 (non-HP -20, HP -75)
-function injBase(f){return {hp:f.hp-75,atk:f.atk-20,def:f.def-20,spa:f.spa-20,spd:f.spd-20,spe:f.spe-20}}
-
-// チャンピオンズ新特性のうちエンジン標準特性で代替できる防御/無効系（倍率系はpost-calcなので含めない）
-const CHAMP_ABIL_ENGINE={'うなぎのぼり':'Levitate'}; // ふゆう成分=じめん無効。ビーストブースト/フィールド無効は単発ダメージに無関係
-function buildSide(inp){
-  const G=window.SMOGON, gen=CALC.gen, notes=[];
-  let speciesEng=CALC.dict.pokemon[inp.species], baseStats=null, typesOverride=null, abilityEng;
-  if(!speciesEng) return {error:'種族不明: '+inp.species};
-  const mega=inp.mega&&CALC.overlay.megas[inp.mega];
-  if(mega){
-    baseStats=mapHK(mega.baseStats);
-    typesOverride=(mega.types||[]).map(t=>TYPE_JA_EN[t]).filter(Boolean);
-    abilityEng=(mega.abilities&&mega.abilities[0])?CALC.dict.abilities[mega.abilities[0]]:undefined;
-    notes.push('メガ: '+inp.mega+(mega.new?'(新)':'')+(mega.abilities&&mega.abilities.length?'':' ※特性未確定'));
-  }else{
-    const sp=gen.species.get(G.toID(speciesEng));
-    if(sp&&sp.baseStats){baseStats={};SK.forEach(s=>baseStats[s]=sp.baseStats[s])}
-    abilityEng=inp.ability?(CALC.dict.abilities[inp.ability]||CHAMP_ABIL_ENGINE[inp.ability]):undefined; // 倍率系はpost-calc(undefined)、無効/防御系はengine特性へ対応
-  }
-  if(!baseStats) return {error:'種族値取得失敗: '+inp.species};
-  const finalStats=computeChampStats(baseStats,inp.points,inp.nature);
-  const opt={ level:50, nature:'Hardy',
-    ivs:{hp:31,atk:31,def:31,spa:31,spd:31,spe:31}, evs:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0},
-    item: inp.item?CALC.dict.items[inp.item]:undefined, ability: abilityEng,
-    boosts: inp.boosts, overrides:{ baseStats: injBase(finalStats) } };
-  if(typesOverride&&typesOverride.length) opt.overrides.types=typesOverride;
-  if(inp.teraOn&&inp.tera&&TYPE_JA_EN[inp.tera]) opt.teraType=TYPE_JA_EN[inp.tera];
-  return { pokemon:new G.Pokemon(gen,speciesEng,opt), finalStats, notes };
-}
-// move build + champions overlay (power override / ability type-convert) + post-calc multiplier
-function prepMove(moveJa, atk){
-  const G=window.SMOGON, gen=CALC.gen, notes=[];
-  const eng=CALC.dict.moves[moveJa]; if(!eng) return {error:'技不明: '+moveJa};
-  const ov=CALC.overlay.moves[moveJa]||{}, overrides={};
-  if(ov.basePower!=null){overrides.basePower=ov.basePower;notes.push('威力変更('+(ov.note||'')+')')}
-  if(ov.accuracy!=null) overrides.accuracy=ov.accuracy;
-  let move=new G.Move(gen,eng,Object.keys(overrides).length?{overrides}:undefined);
-  const origType=move.type; let mult=1;
-  const ab=atk.ability&&CALC.overlay.abilities[atk.ability];
-  if(ab){
-    if(ab.fromType&&ab.toType&&origType===TYPE_JA_EN[ab.fromType]){
-      move=new G.Move(gen,eng,{overrides:Object.assign({},overrides,{type:TYPE_JA_EN[ab.toType]})});
-      if(ab.mult)mult*=ab.mult;
-      notes.push('特性 '+atk.ability+'：'+ab.fromType+'→'+ab.toType+(ab.mult?' ×'+ab.mult:''));
-    }else if(ab.type&&ab.mult&&origType===TYPE_JA_EN[ab.type]){
-      mult*=ab.mult; notes.push('特性 '+atk.ability+' ×'+ab.mult);
-    }
-  }
-  return {move,mult,notes};
-}
-function buildField(f, atkAbility){
-  const G=window.SMOGON, opt={gameType:f.gameType};
-  if(WEATHER_JA_EN[f.weather]) opt.weather=WEATHER_JA_EN[f.weather];
-  if(TERRAIN_JA_EN[f.terrain]) opt.terrain=TERRAIN_JA_EN[f.terrain];
-  const ab=atkAbility&&CALC.overlay.abilities[atkAbility];
-  if(ab&&ab.weather==='sun'&&!opt.weather) opt.weather='Sun'; // メガソーラー
-  const field=new G.Field(opt);
-  field.defenderSide=new G.Side({isReflect:f.reflect,isLightScreen:f.lightScreen});
-  field.attackerSide=new G.Side({isHelpingHand:f.helpingHand});
-  return field;
-}
-function pct(x,hp){return Math.round(x/hp*1000)/10}
-function simpleKO(min,max,hp){
-  if(min>=hp)return'確定1発';
-  const g=Math.ceil(hp/min), b=Math.ceil(hp/max);
-  return g===b?'確定'+g+'発':'乱数'+b+'〜'+g+'発';
-}
-// res.damage（16段乱数）を取り出し post-mult を適用
-function getRolls(res,mult){
-  let d=res.damage; if(typeof d==='number')d=[d];
-  if(Array.isArray(d)&&Array.isArray(d[0]))d=d[0];
-  return (d||[]).map(x=>mult!==1?Math.floor(x*mult):x);
-}
-// 1ロールあたりのKO発数（HP半分以下で1回だけきのみ回復）
-function hitsToKO(perHit,hp,heal){
-  if(perHit<=0)return 99;
-  let cur=hp,hits=0,used=false;
-  while(cur>0&&hits<20){
-    cur-=perHit; hits++;
-    if(cur<=0)break;
-    if(heal&&!used&&cur<=Math.floor(hp/2)){cur=Math.min(hp,cur+heal);used=true}
-  }
-  return hits;
-}
-function berryKO(rolls,hp,heal){
-  if(!rolls.length)return'';
-  const best=hitsToKO(Math.max(...rolls),hp,heal), worst=hitsToKO(Math.min(...rolls),hp,heal);
-  return best===worst?'確定'+best+'発':best+'〜'+worst+'発';
-}
-// 残飯/くろいヘドロ・残留ダメージ(engine kochance)＋きのみ(自前)の確定数注記。なければ''
-function koResidualNote(res,defHP,dItem,mult){
-  const out=[];
-  if(mult===1){
-    let ko=null; try{ko=res.kochance()}catch(e){}
-    if(ko&&ko.n&&/recovery|residual/i.test(ko.text||''))
-      out.push('残飯/残留込み '+(ko.chance>=1?'確定'+ko.n+'発':ko.n+'発'+(ko.chance*100).toFixed(1)+'%'));
-  }
-  if(dItem==='オボンのみ'||dItem==='オレンのみ'){
-    const heal=dItem==='オボンのみ'?Math.floor(defHP/4):10;
-    const n=berryKO(getRolls(res,mult),defHP,heal);
-    if(n)out.push((dItem==='オボンのみ'?'オボン':'オレン')+'込み '+n);
-  }
-  return out.join(' / ');
-}
-function calcOnce(a,d,moveJa,f){
-  const G=window.SMOGON;
-  const A=buildSide(a); if(A.error)return{error:A.error};
-  const D=buildSide(d); if(D.error)return{error:D.error};
-  const pm=prepMove(moveJa,a); if(pm.error)return{error:pm.error};
-  if(f.crit)pm.move.isCrit=true;
-  const field=buildField(f,a.ability);
-  let res; try{res=G.calculate(CALC.gen,A.pokemon,D.pokemon,pm.move,field)}catch(e){return{error:'計算失敗: '+e.message}}
-  let [min,max]=res.range(); const defHP=D.finalStats.hp;
-  let engineDesc=''; try{engineDesc=res.desc()}catch(e){}
-  const mult=pm.mult||1;
-  if(mult!==1){min=Math.floor(min*mult);max=Math.floor(max*mult)}
-  const koText=max<=0?'効果なし':simpleKO(min,max,defHP);
-  const koNote=max<=0?'':koResidualNote(res,defHP,d.item,mult);
-  return {ok:true,moveJa,minDmg:min,maxDmg:max,defHP,minPct:pct(min,defHP),maxPct:pct(max,defHP),koText,koNote,engineDesc,notes:[...A.notes,...D.notes,...pm.notes]};
-}
-
-// ----- CALC UI -----
-function cval(id){const e=document.getElementById(id);return e?e.value:''}
-function cchk(id){const e=document.getElementById(id);return e?e.checked:false}
-function clampInt(v,lo,hi){v=parseInt(v);if(isNaN(v))return lo;return Math.max(lo,Math.min(hi,v))}
-function sideCardHtml(pre,label,withMoves){
-  return `<div class="ct">${label}</div>
-  <div class="brow" style="align-items:center;margin-bottom:10px">
-    <button class="btn" id="${pre}-poke-btn" data-role="${pre}-poke" style="min-width:130px;justify-content:center">＋ ポケモン選択</button>
-    <button class="btn" id="${pre}-party-btn" data-role="${pre}-party" style="font-size:11px">パーティから</button>
-    <select id="${pre}-mega" class="cinput" style="display:none;max-width:170px"></select>
-  </div>
-  <div class="cpts">
-    ${HK.map(k=>`<label class="cpt"><span>${k}</span><input type="number" min="0" max="32" value="0" id="${pre}-pt-${k}" class="cnum"></label>`).join('')}
-    <button class="btn" id="${pre}-pts-max" style="font-size:10px;padding:4px 9px">ぶっぱ</button>
-    <span class="ctot" id="${pre}-pts-tot">合計 0/66</span>
-  </div>
-  <div class="cgrid2">
-    <label class="cf"><span class="slbl">性格</span><select id="${pre}-nature" class="cinput"></select></label>
-    <label class="cf"><span class="slbl">テラスタル</span><span style="display:flex;gap:5px;align-items:center"><select id="${pre}-tera" class="cinput"></select><input type="checkbox" id="${pre}-tera-on" title="テラス有効"></span></label>
-    <label class="cf"><span class="slbl">とくせい</span><input list="dl-ability" id="${pre}-ability" class="cinput" autocomplete="off"></label>
-    <label class="cf"><span class="slbl">もちもの</span><input list="dl-item" id="${pre}-item" class="cinput" autocomplete="off"></label>
-  </div>
-  <span class="slbl">ランク補正</span>
-  <div class="cranks">
-    ${[['A','atk'],['B','def'],['C','spa'],['D','spd'],['S','spe']].map(([j,s])=>`<label class="crk"><span>${j}</span><select id="${pre}-rk-${s}" class="cinput crksel"></select></label>`).join('')}
-  </div>
-  ${withMoves?`<div class="cmoves"><span class="slbl">技（最大4・複数まとめて計算）</span>${[0,1,2,3].map(i=>`<input list="dl-move" id="${pre}-move-${i}" class="cinput" placeholder="技${i+1}" autocomplete="off">`).join('')}</div>`:''}`;
-}
-function buildCalcUI(){
-  document.getElementById('calc-atk').innerHTML=sideCardHtml('atk','攻撃側',true);
-  document.getElementById('calc-def').innerHTML=sideCardHtml('def','防御側',true);
-  document.getElementById('atk-poke-btn').onclick=()=>pickCalcPoke('atk');
-  document.getElementById('def-poke-btn').onclick=()=>pickCalcPoke('def');
-  document.getElementById('atk-party-btn').onclick=()=>pickFromParty('atk');
-  document.getElementById('def-party-btn').onclick=()=>pickFromParty('def');
-  document.getElementById('atk-pts-max').onclick=()=>setBuppa('atk');
-  document.getElementById('def-pts-max').onclick=()=>setBuppa('def');
-  document.getElementById('atk-mega').onchange=e=>{calcState.atk.mega=e.target.value;recalc()};
-  document.getElementById('def-mega').onchange=e=>{calcState.def.mega=e.target.value;recalc()};
-  const page=document.getElementById('page-calc');
-  page.addEventListener('input',e=>{ if(e.target.classList.contains('cnum'))updateTot(e.target.id.slice(0,3)); recalc(); });
-  page.addEventListener('change',recalc);
-}
-function esc(s){return String(s||'').replace(/"/g,'&quot;')}
-function natureOptionsHtml(sel){return Object.keys(CALC.dict.natures).map(n=>`<option${n===(sel||'まじめ')?' selected':''}>${n}</option>`).join('')}
-function teraOptionsHtml(sel){return '<option value="">なし</option>'+Object.keys(TYPE_JA_EN).map(t=>`<option${t===sel?' selected':''}>${t}</option>`).join('')}
-function fillDatalists(){
-  const fillDL=(id,keys)=>{const e=document.getElementById(id);if(e)e.innerHTML=keys.map(k=>`<option value="${esc(k)}"></option>`).join('')};
-  fillDL('dl-ability',[...new Set([...Object.keys(CALC.dict.abilities),...Object.keys(CALC.overlay.abilities)])].sort());
-  fillDL('dl-item',Object.keys(CALC.dict.items));
-  fillDL('dl-move',[...new Set([...Object.keys(CALC.dict.moves),...Object.keys(CALC.overlay.moves)])]);
-}
-function populateCalcLists(){
-  const rankOpts=[6,5,4,3,2,1,0,-1,-2,-3,-4,-5,-6].map(n=>`<option value="${n}"${n===0?' selected':''}>${n>0?'+'+n:n}</option>`).join('');
-  ['atk','def'].forEach(pre=>{
-    document.getElementById(pre+'-nature').innerHTML=natureOptionsHtml('まじめ');
-    document.getElementById(pre+'-tera').innerHTML=teraOptionsHtml('');
-    ['atk','def','spa','spd','spe'].forEach(s=>document.getElementById(`${pre}-rk-${s}`).innerHTML=rankOpts);
-  });
-  fillDatalists();
-}
-function setBuppa(pre){
-  // 計66: 2能力に32 + 1能力(H)に2。攻撃側はA/S、防御側はB/Dぶっぱ（編集自由）
-  const v=pre==='atk'?{H:2,A:32,B:0,C:0,D:0,S:32}:{H:2,A:0,B:32,C:0,D:32,S:0};
-  HK.forEach(k=>document.getElementById(`${pre}-pt-${k}`).value=v[k]);
-  updateTot(pre); recalc();
-}
-function updateTot(pre){
-  let t=0; HK.forEach(k=>t+=clampInt(cval(`${pre}-pt-${k}`),0,32));
-  const el=document.getElementById(pre+'-pts-tot'); el.textContent='合計 '+t+'/66'; el.classList.toggle('over',t>66);
-}
-function pickCalcPoke(pre){
-  openModal((pre==='atk'?'攻撃':'防御')+'側のポケモン',name=>{
-    calcState[pre].species=name; calcState[pre].mega='';
-    updateCalcPokeBtn(pre); updateMegaSelect(pre); recalc();
-  });
-}
-function updateCalcPokeBtn(pre){
-  const sp=calcState[pre].species, btn=document.getElementById(pre+'-poke-btn');
-  if(!sp){btn.innerHTML='＋ ポケモン選択';return}
-  const r=getPoke(sp)||{};
-  btn.innerHTML=`<img src="${r[4]||''}" style="width:24px;height:24px;object-fit:contain;image-rendering:pixelated;vertical-align:middle" onerror="this.style.display='none'"> ${r[1]||sp}`;
-}
-function stripMega(m){return m.replace(/^(メガ|ゲンシ)/,'').replace(/[XYZ]$/,'')} // メガリザードンX->リザードン, ゲンシカイオーガ->カイオーガ
-function updateMegaSelect(pre){
-  const sel=document.getElementById(pre+'-mega'), sp=calcState[pre].species;
-  const opts=sp?Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===sp):[];
-  if(!opts.length){sel.style.display='none';sel.innerHTML='';calcState[pre].mega='';return}
-  sel.innerHTML='<option value="">通常</option>'+opts.map(m=>`<option value="${m}">${m}</option>`).join('');
-  sel.style.display='';
-}
-function readSide(pre){
-  const pts={}; HK.forEach(k=>pts[k]=clampInt(cval(`${pre}-pt-${k}`),0,32));
-  const boosts={}; ['atk','def','spa','spd','spe'].forEach(s=>boosts[s]=parseInt(cval(`${pre}-rk-${s}`))||0);
-  return {species:calcState[pre].species,mega:calcState[pre].mega,points:pts,nature:cval(`${pre}-nature`),
-    ability:cval(`${pre}-ability`).trim(),item:cval(`${pre}-item`).trim(),
-    tera:cval(`${pre}-tera`),teraOn:cchk(`${pre}-tera-on`),boosts};
-}
-function readField(){return {gameType:cval('cf-gametype'),weather:cval('cf-weather'),terrain:cval('cf-terrain'),
-  reflect:cchk('cf-reflect'),lightScreen:cchk('cf-lightscreen'),helpingHand:cchk('cf-hh'),crit:cchk('cf-crit')}}
-function resCardHtml(r,mj){
-  if(r.error)return `<div class="cres err">${mj}: ${r.error}</div>`;
-  const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text1)';
-  return `<div class="cres">
-    <div class="cres-h"><span class="cres-mv">${mj}</span><span class="cres-dmg">${r.minDmg}〜${r.maxDmg}</span></div>
-    <div class="cres-bar"><div class="cres-fill" style="width:${Math.min(100,r.maxPct)}%;background:${col}"></div></div>
-    <div class="cres-meta"><span style="color:${col}">${r.minPct}〜${r.maxPct}%（HP${r.defHP}）</span><span class="cres-ko">${r.koText}</span></div>
-    ${r.koNote?`<div class="cres-note" style="color:var(--accent)">${r.koNote}</div>`:''}
-    ${r.notes.length?`<div class="cres-note">${r.notes.join(' / ')}</div>`:''}
-  </div>`;
-}
-function dirSection(att,def,moves,f){
-  if(!moves.length)return '';
-  const an=(getPoke(att.species)||[])[1]||att.species, dn=(getPoke(def.species)||[])[1]||def.species;
-  let h=`<div class="cdir">${an} <span style="opacity:.55">→</span> ${dn}</div>`;
-  moves.forEach(mj=>{ h+=resCardHtml(calcOnce(att,def,mj,f),mj); });
-  return h;
-}
-function recalc(){
-  const el=document.getElementById('calc-result'); if(!el)return;
-  if(!CALC.ready){el.innerHTML='<div class="empty">計算エンジンを読み込み中...</div>';return}
-  const a=readSide('atk'), d=readSide('def'), f=readField();
-  if(!a.species||!d.species){el.innerHTML='<div class="empty">攻撃側・防御側のポケモンを選択してください</div>';return}
-  const am=[0,1,2,3].map(i=>cval('atk-move-'+i).trim()).filter(Boolean);
-  const dm=[0,1,2,3].map(i=>cval('def-move-'+i).trim()).filter(Boolean);
-  if(!am.length&&!dm.length){el.innerHTML='<div class="empty">どちらかのポケモンの技を入力してください</div>';return}
-  el.innerHTML=dirSection(a,d,am,f)+dirSection(d,a,dm,f);
-}
-async function loadCalcDicts(){
-  if(CALC.dict)return;
-  console.log('[calc] loading dicts/overlay');
-  const jf=n=>fetch('./data/'+n+'.json?v='+Date.now()).then(r=>{if(!r.ok)throw new Error(n+' HTTP '+r.status);return r.json()});
-  const [pk,mv,ab,it,na,ov]=await Promise.all([jf('dict_pokemon'),jf('dict_moves'),jf('dict_abilities'),jf('dict_items'),jf('dict_natures'),jf('champions_overlay')]);
-  CALC.dict={pokemon:pk.map,moves:mv.map,abilities:ab.map,items:it.map,natures:na.map};
-  CALC.overlay=ov;
-  fillDatalists();
-  console.log('[calc] dicts ready: pokemon',Object.keys(pk.map).length,'moves',Object.keys(mv.map).length,'megas',Object.keys(ov.megas).length);
-}
-async function initCalc(){
-  if(CALC.ready||CALC.loading)return;
-  CALC.loading=true;
-  console.log('[calc] init: waiting for engine + dicts');
-  try{
-    const G=await whenSmogon();
-    await loadCalcDicts();
-    CALC.gen=G.Generations.get(9); CALC.ready=true;
-    populateCalcLists();
-    recalc();
-  }catch(e){
-    console.error('[calc] init failed',e);
-    const el=document.getElementById('calc-result');
-    if(el)el.innerHTML='<div class="cres err">計算エンジン／辞書の読み込みに失敗しました。オンライン環境で再読み込みしてください（'+e.message+'）</div>';
-  }finally{CALC.loading=false}
-}
-function openCalc(){
-  if(!CALC.built){buildCalcUI();CALC.built=true}
-  initCalc();
-}
-
-// ===== 自パーティ呼び出し(F2): 計算機の攻守枠へ育成データを流し込む =====
-let ppPre=null;
-function pickFromParty(pre){
-  ppPre=pre;
-  const body=document.getElementById('pp-body');
-  const rows=[];
-  (S.parties||[]).forEach(p=>(p.pokemon||[]).forEach(x=>{ if(pname(x))rows.push({party:p.name,it:pbuild(x)}); }));
-  document.getElementById('pp-title').textContent=(pre==='atk'?'攻撃':'防御')+'側 — パーティから選ぶ';
-  if(!rows.length){ body.innerHTML='<div class="mloading">パーティにポケモンが登録されていません</div>'; }
-  else{
-    body.innerHTML='';
-    rows.forEach(({party,it})=>{
-      const r=getPoke(it.name)||{};
-      const div=document.createElement('div');
-      div.className='mitem';
-      const badge=hasBuild(it)?'<span style="color:var(--accent2);font-size:9px">● 育成済</span>':'<span style="color:var(--text3);font-size:9px">未設定→ぶっぱ</span>';
-      div.innerHTML=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy">
-        <div class="mitem-info">
-          <div class="mitem-name">${r[1]||it.name} ${badge}</div>
-          <div class="mitem-types" style="color:var(--text3);font-size:9px">${esc(party)}</div>
-        </div>`;
-      div.onclick=()=>{ const it2=it; applyBuildToSide(ppPre,it2); closePartyPick(); };
-      body.appendChild(div);
-    });
-  }
-  document.getElementById('party-pick-modal').style.display='flex';
-}
-function closePartyPick(){ document.getElementById('party-pick-modal').style.display='none'; ppPre=null; }
-async function applyBuildToSide(pre,it){
-  try{ await loadCalcDicts(); }catch(e){ alert('辞書の読み込みに失敗しました（'+e.message+'）'); return; }
-  if(!document.getElementById(pre+'-nature').options.length)populateCalcLists();
-  calcState[pre].species=it.name; calcState[pre].mega='';
-  updateCalcPokeBtn(pre); updateMegaSelect(pre);
-  const buppa=pre==='atk'?{H:2,A:32,B:0,C:0,D:0,S:32}:{H:2,A:0,B:32,C:0,D:32,S:0}; // setBuppaと同値
-  const hasPts=it.points&&HK.some(k=>(it.points[k]||0)>0);
-  const pts=hasPts?it.points:buppa;
-  HK.forEach(k=>{const e=document.getElementById(`${pre}-pt-${k}`);if(e)e.value=clampInt(pts[k],0,32)});
-  const setV=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v};
-  setV(`${pre}-nature`,it.nature||'まじめ');
-  setV(`${pre}-ability`,it.ability||'');
-  setV(`${pre}-item`,it.item||'');
-  setV(`${pre}-tera`,it.tera||'');
-  const teraOn=document.getElementById(`${pre}-tera-on`); if(teraOn)teraOn.checked=false;
-  {const mv=it.moves||[];[0,1,2,3].forEach(j=>setV(pre+'-move-'+j,mv[j]||''))}
-  console.log('[calc] party→'+pre+': '+it.name+(hasPts?' 育成データ':' ぶっぱ既定'));
-  updateTot(pre); recalc();
-}
-
-// ===== 育成データエディタ(F3) =====
-let bmIdx=-1, bmSpecies='';
-async function openBuildEditor(i){
-  const p=getAP(), it=pbuild(p.pokemon[i]);
-  if(!it||!it.name)return;
-  bmIdx=i; bmSpecies=it.name;
-  const r=getPoke(it.name)||{};
-  document.getElementById('bm-title').textContent=`育成データ — ${r[1]||it.name}`;
-  const body=document.getElementById('bm-body');
-  body.innerHTML='<div class="mloading">辞書を読み込み中...</div>';
-  document.getElementById('build-modal').style.display='flex';
-  try{ await loadCalcDicts(); renderBuildForm(it); }
-  catch(e){ body.innerHTML='<div class="cres err">辞書の読み込みに失敗しました（'+e.message+'）</div>'; }
-}
-function renderBuildForm(it){
-  const pts=it.points||{H:0,A:0,B:0,C:0,D:0,S:0}, moves=it.moves||['','','',''];
-  const body=document.getElementById('bm-body');
-  body.innerHTML=`
-    <div class="brow" style="margin-bottom:10px">
-      <button class="btn" id="bm-change" style="font-size:11px">ポケモンを変更</button>
-    </div>
-    <div class="cpts">
-      ${HK.map(k=>`<label class="cpt"><span>${k}</span><input type="number" min="0" max="32" value="${clampInt(pts[k],0,32)}" id="bm-pt-${k}" class="cnum"></label>`).join('')}
-      <button class="btn" id="bm-buppa" style="font-size:10px;padding:4px 9px">ぶっぱ</button>
-      <span class="ctot" id="bm-tot">合計 0/66</span>
-    </div>
-    <div class="cgrid2">
-      <label class="cf"><span class="slbl">性格</span><select id="bm-nature" class="cinput">${natureOptionsHtml(it.nature)}</select></label>
-      <label class="cf"><span class="slbl">テラスタル</span><select id="bm-tera" class="cinput">${teraOptionsHtml(it.tera||'')}</select></label>
-      <label class="cf"><span class="slbl">とくせい</span><input list="dl-ability" id="bm-ability" class="cinput" autocomplete="off" value="${esc(it.ability)}"></label>
-      <label class="cf"><span class="slbl">もちもの</span><input list="dl-item" id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}"></label>
-    </div>
-    <div class="cmoves"><span class="slbl">技（最大4）</span>${[0,1,2,3].map(j=>`<input list="dl-move" id="bm-move-${j}" class="cinput" placeholder="技${j+1}" autocomplete="off" value="${esc(moves[j])}">`).join('')}</div>`;
-  document.getElementById('bm-change').onclick=()=>{
-    const idx=bmIdx; closeBuildEditor();
-    openModal('ポケモンを変更',name=>{
-      const p=getAP();
-      if(p.pokemon.some((x,j)=>j!==idx&&pname(x)===name)){alert((getPoke(name)?.[1]||name)+'はすでに登録されています');return}
-      p.pokemon[idx]={name}; save(); renderPartySlots(); renderBattleMyParty();
-    });
-  };
-  document.getElementById('bm-buppa').onclick=()=>{ const v={H:2,A:32,B:0,C:0,D:0,S:32}; HK.forEach(k=>document.getElementById('bm-pt-'+k).value=v[k]); updateBmTot(); };
-  if(!renderBuildForm._wired){ document.getElementById('bm-body').addEventListener('input',e=>{ if(e.target.classList.contains('cnum'))updateBmTot(); }); renderBuildForm._wired=true; }
-  updateBmTot();
-}
-function updateBmTot(){
-  let t=0; HK.forEach(k=>t+=clampInt(cval('bm-pt-'+k),0,32));
-  const el=document.getElementById('bm-tot'); if(!el)return;
-  el.textContent='合計 '+t+'/66'; el.classList.toggle('over',t>66);
-}
-function saveBuild(){
-  if(bmIdx<0)return;
-  const p=getAP();
-  const pts={}; HK.forEach(k=>pts[k]=clampInt(cval('bm-pt-'+k),0,32));
-  const tot=HK.reduce((s,k)=>s+pts[k],0);
-  if(tot>66&&!confirm('能力ポイント合計が66を超えています（'+tot+'）。このまま保存しますか？'))return;
-  const moves=[0,1,2,3].map(j=>cval('bm-move-'+j).trim());
-  p.pokemon[bmIdx]={name:bmSpecies,points:pts,nature:cval('bm-nature'),
-    ability:cval('bm-ability').trim(),item:cval('bm-item').trim(),tera:cval('bm-tera'),moves};
-  console.log('[party] saved build slot '+bmIdx+': '+bmSpecies+' pts='+tot);
-  save(); renderPartySlots(); renderBattleMyParty(); closeBuildEditor();
-}
-function closeBuildEditor(){ document.getElementById('build-modal').style.display='none'; bmIdx=-1; }
-
-// ===== INIT =====
-(async () => {
-  await loadPokeCSV();
-  migrateParties();
-  renderPTabs();
-  renderPartySlots();
-})();
-</script>
-
-<!-- @smogon/calc engine (ESM, dependency-bundled). Bridges to window.SMOGON for the non-module calc code above. -->
 <script type="module">
   import * as smogon from 'https://cdn.jsdelivr.net/npm/@smogon/calc@0.11/+esm';
+  import {Dex} from 'https://cdn.jsdelivr.net/npm/@pkmn/dex@0.10.11/+esm';
   window.SMOGON = smogon;
   window.dispatchEvent(new Event('smogon-ready'));
   console.log('[calc] @smogon/calc loaded');
+  try { window.PKMN_DEX = Dex.forGen(9); console.log('[calc] @pkmn/dex loaded'); }
+  catch(e) { console.error('[calc] @pkmn/dex forGen failed', e); }
+  window.dispatchEvent(new Event('pkmndex-ready'));
 </script>
 </body>
 </html>
