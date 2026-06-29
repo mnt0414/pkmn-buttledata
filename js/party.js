@@ -35,10 +35,10 @@ function renderPartySlots(){
       const r=getPoke(en)||{};
       const jaName=r[1]||en;
       btn.innerHTML=numSpan+
-        `<span class="slot-ball" style="background:#1a2029;">${spriteImg(en,44)}</span>`+
+        `<span class="slot-ball" style="background:transparent;">${spriteImg(en,44)}</span>`+
         `<span class="slot-name">${jaName}</span>`+
         `<span class="slot-types">${typeHtml(r[3])}</span>`+
-        `<button class="rx" style="position:absolute;top:4px;right:6px;background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;line-height:1;padding:2px 4px;" onclick="rmParty(event,${i})">×</button>`+
+        `<button class="rx" style="position:absolute;top:4px;right:6px;background:none;border:none;color:var(--text-3);font-size:14px;cursor:pointer;line-height:1;padding:2px 4px;" onclick="rmParty(event,${i})">×</button>`+
         (hasBuild(it)?'<span class="slot-build-dot" title="育成データあり"></span>':'');
       btn.onclick=(e)=>{if(e.target.closest('.rx'))return;openBuildEditor(i)};
     }else{
@@ -72,3 +72,4 @@ function delParty(){
   S.parties=S.parties.filter(p=>p.id!==S.activeParty);
   S.activeParty=S.parties[0].id;save();renderPTabs();renderPartySlots();
 }
+window.addEventListener('engnames-ready',()=>{ renderPartySlots(); renderBattleMyParty(); });

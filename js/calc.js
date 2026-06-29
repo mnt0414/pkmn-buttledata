@@ -330,7 +330,7 @@ function readField(){return {gameType:cval('cf-gametype'),weather:cval('cf-weath
   reflect:cchk('cf-reflect'),lightScreen:cchk('cf-lightscreen'),helpingHand:cchk('cf-hh'),crit:cchk('cf-crit'),halfBerry:cchk('cf-half-berry')}}
 function resCardHtml(r,mj,critR){
   if(r.error)return `<div class="cres err">${mj}: ${r.error}</div>`;
-  const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text1)';
+  const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text)';
   const solidPct=Math.min(100,r.minPct);
   const bandLeft=solidPct;
   const bandWidth=Math.min(100-bandLeft,r.maxPct-r.minPct);
@@ -346,7 +346,7 @@ function resCardHtml(r,mj,critR){
   if(critR&&!critR.error){
     const cd=critR.minDmg===critR.maxDmg?`${critR.minDmg}`:`${critR.minDmg}〜${critR.maxDmg}`;
     const cp=critR.minPct===critR.maxPct?`${critR.minPct}%`:`${critR.minPct}〜${critR.maxPct}%`;
-    critHtml=`<div class="cres-row" style="margin-top:4px"><span class="cres-lbl">急所</span><span class="cres-val" style="font-size:13px">${cd}</span><span class="cres-pct" style="color:#ff7a6b">${cp}</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--text2)">${critR.koText}</span></div>`;
+    critHtml=`<div class="cres-row" style="margin-top:4px"><span class="cres-lbl">急所</span><span class="cres-val" style="font-size:13px">${cd}</span><span class="cres-pct" style="color:#ff7a6b">${cp}</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--text-2)">${critR.koText}</span></div>`;
   }
   return `<div class="cres">
     <div class="cres-head"><span class="cres-mv">${mj}</span><span class="cres-ko-badge" style="color:${col}">${r.koText}</span></div>
@@ -357,7 +357,7 @@ function resCardHtml(r,mj,critR){
       <div class="cres-tick" style="left:25%"></div><div class="cres-tick" style="left:50%"></div><div class="cres-tick" style="left:75%"></div>
     </div>
     <div class="cres-markers">${markers.map(m=>`<span class="cres-marker${m.sure?' sure':''}" style="left:${m.left}%">${m.label}</span>`).join('')}</div>
-    <div class="cres-row"><span class="cres-lbl">ダメージ</span><span class="cres-val">${dmgRange}</span><span class="cres-pct" style="color:${col}">${pctRange}</span><span style="margin-left:auto;font-size:10px;color:var(--text3)">HP ${r.defHP}</span></div>
+    <div class="cres-row"><span class="cres-lbl">ダメージ</span><span class="cres-val">${dmgRange}</span><span class="cres-pct" style="color:${col}">${pctRange}</span><span style="margin-left:auto;font-size:10px;color:var(--text-3)">HP ${r.defHP}</span></div>
     ${critHtml}
     ${r.koNote?`<div class="cres-note">${r.koNote}</div>`:''}
     ${r.notes.length?`<div class="cres-note">${r.notes.join(' / ')}</div>`:''}
