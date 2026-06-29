@@ -22,7 +22,7 @@ function gp(id, _btn) {
   if (tEl) tEl.textContent = m.title  || '';
 
   if (id === 'party')    { renderPTabs(); renderPartySlots(); }
-  if (id === 'battle')   { renderBattleMyParty(); renderOppSlots(); }
+  if (id === 'battle')   { renderBattleMyParty(); renderOppSlots(); goStep(1); }
   if (id === 'stats')    { renderPFBar(); renderStats(); }
   if (id === 'calc')     { openCalc(); }
   if (id === 'settings') { loadSet(); }

@@ -160,7 +160,7 @@ async function renderSpeedOrder(){
   }));
   const all=[...myList,...oppList];
   if(!all.length){el.innerHTML='';return}
-  el.innerHTML='<span style="color:var(--text3);font-size:10px">すばやさ計算中...</span>';
+  el.innerHTML='<span style="color:var(--text-3);font-size:10px">すばやさ計算中...</span>';
   if(!CALC.ready){
     try{initCalc();}catch(e){}
     await new Promise(r=>{const t=setInterval(()=>{if(CALC.ready){clearInterval(t);r()}},150);setTimeout(()=>{clearInterval(t);r()},8000);});
@@ -184,7 +184,7 @@ async function renderSpeedOrder(){
   });
   entries.sort((a,b)=>(b.spe??-1)-(a.spe??-1));
   const mkChip=(en,spe,side,spriteId)=>{
-    const col=side==='my'?'var(--text)':'var(--text3)';
+    const col=side==='my'?'var(--text)':'var(--text-3)';
     const chip=document.createElement('span');
     chip.className='speed-chip';
     chip.title=`${en} ${spe??'?'}`;
@@ -219,7 +219,7 @@ function renderOppSlots(){
       slot.innerHTML=numSpan+
         `<span style="width:50px;height:50px;border-radius:10px;background:var(--raised);display:flex;align-items:center;justify-content:center;overflow:hidden;">${spriteImg(en,46)}</span>`+
         `<span class="opp-slot-name">${r[1]||en}</span>`+
-        `<button style="position:absolute;top:4px;right:6px;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;padding:2px 4px;" onclick="rmOpp(event,${i})">×</button>`;
+        `<button style="position:absolute;top:4px;right:6px;background:none;border:none;color:var(--text-3);font-size:13px;cursor:pointer;padding:2px 4px;" onclick="rmOpp(event,${i})">×</button>`;
       slot.onclick=(e)=>{if(e.target.tagName==='BUTTON')return;openModal(`スロット${i+1}(相手)`,n=>setOppSlot(i,n))};
     }else{
       slot.innerHTML=numSpan+`<span style="font-size:20px;color:#37414e;margin:6px 0;">＋</span>`;
@@ -242,7 +242,7 @@ function renderSelGrid(party,elId,sel){
     const isL=sel.lead.includes(en),isB=sel.back.includes(en);
     const btn=document.createElement('button');
     btn.className='sel-cell'+(isL?' lead':isB?' back':'');
-    const tagColor=isL?'var(--lead)':isB?'var(--win)':'var(--text3)';
+    const tagColor=isL?'var(--primary)':isB?'var(--win)':'var(--text-3)';
     const tag=isL?'先発':isB?'後発':'';
     const borderCol=isL?'#3d9bff':isB?'#3ad07a':'transparent';
     btn.innerHTML=
@@ -267,7 +267,7 @@ function renderConfirm(){
     if(!el)return;
     el.innerHTML='';
     el.style.cssText='display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;';
-    [['先発',sel.lead,'var(--lead)'],['後発',sel.back,'var(--win)']].forEach(([pos,arr,color])=>{
+    [['先発',sel.lead,'var(--primary)'],['後発',sel.back,'var(--win)']].forEach(([pos,arr,color])=>{
       arr.forEach(en=>{
         const r=getPoke(en)||{};
         const chip=document.createElement('span');
