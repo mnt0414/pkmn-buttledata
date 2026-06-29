@@ -289,7 +289,7 @@ function goStep(n){
   curStep=n;
   ['bs1','bs2','bs3'].forEach((id,i)=>{document.getElementById(id).style.display=i===n-1?'block':'none'});
   const dots=document.querySelectorAll('#sbar .step-dot');
-  dots.forEach((d,i)=>{d.style.background=i<n-1?'var(--text-3)':i===n-1?'var(--primary)':'var(--line)';});
+  dots.forEach((d,i)=>{d.style.background=i<n-1?'var(--text-2)':i===n-1?'var(--primary)':'var(--line)';});
   document.getElementById('slabel').textContent=['ステップ 1：相手のパーティを記録','ステップ 2：選出を選ぶ','ステップ 3：結果を記録'][n-1];
   if(n===2){
     const myP=getAP().pokemon.filter(Boolean).map(pname);
