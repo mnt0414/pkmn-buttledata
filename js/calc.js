@@ -48,9 +48,13 @@ const BATTLE_FORMS={
 let ABIL_EN_JA={};
 function whenPkmnDex(){return new Promise(r=>{if(window.PKMN_DEX)return r(window.PKMN_DEX);addEventListener('pkmndex-ready',()=>r(window.PKMN_DEX),{once:true})})}
 function whenCalcReady(){return new Promise(r=>{if(CALC.ready)return r();addEventListener('calc-ready',()=>r(),{once:true})})}
+function normalizeCalcSpeciesName(name){
+  if(!name)return name;
+  return String(name).replace(/-Gmax$/i,'');
+}
 function buildSide(inp){
   const G=window.SMOGON, gen=CALC.gen, notes=[];
-  let speciesEng=CALC.dict.pokemon[inp.species], baseStats=null, typesOverride=null, abilityEng;
+  let speciesEng=CALC.dict.pokemon[inp.species]||normalizeCalcSpeciesName(inp.species)||null, baseStats=null, typesOverride=null, abilityEng;
   if(!speciesEng) return {error:'種族不明: '+inp.species};
   const mega=inp.mega&&CALC.overlay.megas[inp.mega];
   if(mega){
@@ -260,7 +264,7 @@ function fillAbilityDL(pre){
   if(mg&&CALC.overlay&&CALC.overlay.megas[mg]){
     (CALC.overlay.megas[mg].abilities||[]).forEach(a=>{if(a)jaNames.push(a);});
   }else if(window.PKMN_DEX&&CALC.dict){
-    const en=CALC.dict.pokemon[sp];
+    const en=CALC.dict.pokemon[sp]||normalizeCalcSpeciesName(sp)||null;
     if(en){
       const dexSp=window.PKMN_DEX.species.get(en);
       if(dexSp&&dexSp.abilities){
