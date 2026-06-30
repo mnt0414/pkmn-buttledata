@@ -294,7 +294,7 @@ body.theme-dark{
 .pick-bar-wrap{flex:1;height:6px;background:var(--line);border-radius:6px;overflow:hidden;}
 .pick-bar{height:100%;border-radius:6px;}
 .hist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
-.hist-badge{font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px;font-family:'Saira Condensed','Saira',sans-serif;}
+.hist-badge{font-size:10px;font-weight:700;border-radius:5px;width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:none;font-family:'Saira Condensed','Saira',sans-serif;}
 .hist-badge.win{background:var(--tint-win);color:var(--win);}
 .hist-badge.loss{background:var(--tint-loss);color:var(--loss);}
 .hist-badge.draw{background:var(--tint-accent);color:var(--warning);}

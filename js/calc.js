@@ -310,9 +310,10 @@ function updateCalcPokeBtn(pre){
 function stripMega(m){return m.replace(/^(メガ|ゲンシ)/,'').replace(/[XYZ]$/,'')}
 function updateFormRows(pre){
   const sp=calcState[pre].species;
+  const jaName=(BY_EN[sp]&&BY_EN[sp][1])||sp;
   const megaRow=document.getElementById(pre+'-mega-row');
   if(megaRow){
-    const opts=sp&&CALC.overlay?Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===sp):[];
+    const opts=sp&&CALC.overlay?Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===jaName):[];
     if(!opts.length){megaRow.style.display='none';megaRow.innerHTML='';calcState[pre].mega='';}
     else{megaRow.style.display='flex';megaRow.innerHTML=`<button class="btn s" data-mega="">通常</button>`+opts.map(m=>`<button class="btn" data-mega="${esc(m)}">${m}</button>`).join('');}
   }
