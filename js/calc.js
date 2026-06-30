@@ -381,8 +381,10 @@ function dirSection(att,def,moves,f){
 }
 function updateCalcStats(pre){
   if(!CALC.ready||!calcState[pre].species)return;
-  const A=buildSide(readSide(pre)); if(A.error||!A.finalStats)return;
-  HK.forEach((k,i)=>{const el=document.getElementById(pre+'-sv-'+k);if(el)el.textContent=A.finalStats[SK[i]]??'-';});
+  const side=readSide(pre);
+  const A=buildSide(side); if(A.error||!A.finalStats)return;
+  const nm=natModStats(side.nature);
+  HK.forEach((k,i)=>{const el=document.getElementById(pre+'-sv-'+k);if(!el)return;el.textContent=A.finalStats[SK[i]]??'-';el.style.color=SK[i]===nm.plus?'var(--nat-neg)':SK[i]===nm.minus?'var(--nat-pos)':'';});
 }
 function recalc(){
   ['atk','def'].forEach(pre=>updateCalcStats(pre));

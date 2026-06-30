@@ -110,7 +110,7 @@ function renderBuildForm(it){
       <label class="cf"><span class="slbl">性格</span><select id="bm-nature" class="cinput">${natureOptionsHtml(it.nature)}</select></label>
       <label class="cf"><span class="slbl">テラスタル</span><select id="bm-tera" class="cinput">${teraOptionsHtml(it.tera||'')}</select></label>
       <label class="cf"><span class="slbl">とくせい</span><input list="dl-ability" id="bm-ability" class="cinput" autocomplete="off" value="${esc(it.ability)}"></label>
-      <label class="cf"><span class="slbl">もちもの</span><input list="dl-item" id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}"></label>
+      <label class="cf" style="position:relative"><span class="slbl">もちもの</span><div class="item-picker"><img class="item-icon" id="bm-item-icon" style="display:none"><input list="dl-item" id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}" oninput="updateItemIcon('bm')"></div></label>
     </div>
     <div class="cmoves"><span class="slbl">技（最大4）</span>${[0,1,2,3].map(j=>`<input list="dl-move" id="bm-move-${j}" class="cinput" placeholder="技${j+1}" autocomplete="off" value="${esc(moves[j])}">`).join('')}</div>`;
   document.getElementById('bm-change').onclick=()=>{
@@ -132,7 +132,7 @@ function renderBuildForm(it){
     bd.addEventListener('change',e=>{ if(e.target.id==='bm-nature')updateBmStats(); });
     renderBuildForm._wired=true;
   }
-  updateBmTot(); updateBmStats();
+  updateBmTot(); updateBmStats(); updateItemIcon('bm');
 }
 function updateBmStats(){
   if(!CALC.ready||!bmSpecies)return;
@@ -148,13 +148,15 @@ function updateBmStats(){
     }
   }
   if(!base){
-    const en=CALC.dict.pokemon[bmSpecies]; if(!en)return;
+    const en=CALC.dict.pokemon[bmSpecies]||normalizeCalcSpeciesName(bmSpecies); if(!en)return;
     const sp=CALC.gen.species.get(window.SMOGON.toID(en)); if(!sp||!sp.baseStats)return;
     base={}; SK.forEach(s=>base[s]=sp.baseStats[s]);
   }
   const pts={}; HK.forEach(k=>pts[k]=clampInt(cval('bm-pt-'+k),0,32));
-  const stats=computeChampStats(base,pts,cval('bm-nature'));
-  HK.forEach((k,i)=>{ const el=document.getElementById('bm-sv-'+k); if(el)el.textContent=stats[SK[i]]??'-'; });
+  const natureName=cval('bm-nature');
+  const stats=computeChampStats(base,pts,natureName);
+  const nm=natModStats(natureName);
+  HK.forEach((k,i)=>{ const el=document.getElementById('bm-sv-'+k); if(!el)return; el.textContent=stats[SK[i]]??'-'; el.style.color=SK[i]===nm.plus?'var(--nat-neg)':SK[i]===nm.minus?'var(--nat-pos)':''; });
 }
 function updateBmTot(){
   let t=0; HK.forEach(k=>t+=clampInt(cval('bm-pt-'+k),0,32));
