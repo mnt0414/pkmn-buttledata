@@ -264,7 +264,7 @@ function fillAbilityDL(pre){
   if(mg&&CALC.overlay&&CALC.overlay.megas[mg]){
     (CALC.overlay.megas[mg].abilities||[]).forEach(a=>{if(a)jaNames.push(a);});
   }else if(window.PKMN_DEX&&CALC.dict){
-    const en=CALC.dict.pokemon[sp]||normalizeCalcSpeciesName(sp)||null;
+    const en=normalizeCalcSpeciesName(sp);
     if(en){
       const dexSp=window.PKMN_DEX.species.get(en);
       if(dexSp&&dexSp.abilities){

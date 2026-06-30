@@ -53,11 +53,29 @@ function getBmMegas(){
 function getBmBattleForms(){
   return BATTLE_FORMS[bmSpecies]||[];
 }
+function fillBmAbilityDL(){
+  const el=document.getElementById('dl-ability-bm'); if(!el)return;
+  const sp=bmSpecies, mg=bmMega;
+  if(!sp){el.innerHTML='';return;}
+  const jaNames=[];
+  if(mg&&CALC.overlay&&CALC.overlay.megas[mg]){
+    (CALC.overlay.megas[mg].abilities||[]).forEach(a=>{if(a)jaNames.push(a);});
+  }else if(window.PKMN_DEX&&CALC.dict){
+    const en=normalizeCalcSpeciesName(sp);
+    if(en){
+      const dexSp=window.PKMN_DEX.species.get(en);
+      if(dexSp&&dexSp.abilities){
+        for(const k of['0','1','H']){const eng=dexSp.abilities[k];if(!eng)continue;const ja=ABIL_EN_JA[eng];if(ja)jaNames.push(ja);}
+      }
+    }
+  }
+  el.innerHTML=jaNames.map(k=>`<option value="${esc(k)}"></option>`).join('');
+}
 function setBmMega(mega){
   bmMega=mega; bmBattleForm='';
   const row=document.getElementById('bm-mega-row'); if(!row)return;
   row.querySelectorAll('.btn[data-mega]').forEach(b=>b.classList.toggle('s',b.dataset.mega===mega));
-  updateBmStats();
+  updateBmStats(); fillBmAbilityDL();
 }
 function setBmBattleForm(form){
   bmBattleForm=form; bmMega='';
@@ -65,7 +83,7 @@ function setBmBattleForm(form){
   if(megaRow) megaRow.querySelectorAll('.btn[data-mega]').forEach(b=>b.classList.toggle('s',b.dataset.mega===''));
   const bfRow=document.getElementById('bm-bf-row'); if(!bfRow)return;
   bfRow.querySelectorAll('.btn[data-bf]').forEach(b=>b.classList.toggle('s',b.dataset.bf===form));
-  updateBmStats();
+  updateBmStats(); fillBmAbilityDL();
 }
 async function openBuildEditor(i){
   const p=getAP(), it=pbuild(p.pokemon[i]);
@@ -109,7 +127,7 @@ function renderBuildForm(it){
     <div class="cgrid2">
       <label class="cf"><span class="slbl">性格</span><select id="bm-nature" class="cinput">${natureOptionsHtml(it.nature)}</select></label>
       <label class="cf"><span class="slbl">テラスタル</span><select id="bm-tera" class="cinput">${teraOptionsHtml(it.tera||'')}</select></label>
-      <label class="cf"><span class="slbl">とくせい</span><input list="dl-ability" id="bm-ability" class="cinput" autocomplete="off" value="${esc(it.ability)}"></label>
+      <label class="cf"><span class="slbl">とくせい</span><datalist id="dl-ability-bm"></datalist><input list="dl-ability-bm" id="bm-ability" class="cinput" autocomplete="off" value="${esc(it.ability)}"></label>
       <label class="cf" style="position:relative"><span class="slbl">もちもの</span><div class="item-picker"><img class="item-icon" id="bm-item-icon" style="display:none"><input list="dl-item" id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}" oninput="updateItemIcon('bm')"></div></label>
     </div>
     <div class="cmoves"><span class="slbl">技（最大4）</span>${[0,1,2,3].map(j=>`<input list="dl-move" id="bm-move-${j}" class="cinput" placeholder="技${j+1}" autocomplete="off" value="${esc(moves[j])}">`).join('')}</div>`;
@@ -132,7 +150,7 @@ function renderBuildForm(it){
     bd.addEventListener('change',e=>{ if(e.target.id==='bm-nature')updateBmStats(); });
     renderBuildForm._wired=true;
   }
-  updateBmTot(); updateBmStats(); updateItemIcon('bm');
+  updateBmTot(); updateBmStats(); updateItemIcon('bm'); fillBmAbilityDL();
 }
 function updateBmStats(){
   if(!CALC.ready||!bmSpecies)return;

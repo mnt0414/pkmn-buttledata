@@ -64,14 +64,19 @@ function applyEngNames(){
   try{
     const byNum={};
     window.PKMN_DEX.species.all().forEach(sp=>{ if(sp.num>0&&!byNum[sp.num]) byNum[sp.num]=sp.name; });
-    POKE_DB.forEach(r=>{ if(byNum[r[0]]) r[2]=byNum[r[0]]; });
+    const calcDict=(typeof CALC!=='undefined'&&CALC.dict)?CALC.dict.pokemon:null;
+    POKE_DB.forEach(r=>{
+      const enFromDict=calcDict?calcDict[r[1]]:null;
+      r[2]=enFromDict||byNum[r[0]]||r[2];
+    });
     for(const k in BY_EN) delete BY_EN[k];
     POKE_DB.forEach(r=>{ if(r[2]) BY_EN[r[2]]=r; });
-    console.log('[state] English names applied');
+    console.log('[state] English names applied'+(calcDict?' (with calcDict)':''));
     window.dispatchEvent(new Event('engnames-ready'));
   }catch(e){ console.warn('[state] applyEngNames failed',e); }
 }
 window.addEventListener('pkmndex-ready',applyEngNames);
+window.addEventListener('calc-ready',applyEngNames);
 function getPoke(name_en){ return BY_EN[name_en]||null; }
 function typeHtml(types){
   return (types||[]).map(t=>`<span class="tbadge" style="background:${TC[t]}22;color:${TC[t]};box-shadow:inset 0 0 0 1px ${TC[t]}55">${t}</span>`).join('');
@@ -144,7 +149,7 @@ function filterM(q){
         <div class="mitem-types">${typeHtml(types)}</div>
       </div>
       <a href="${yakkun}" target="_blank" onclick="event.stopPropagation()">ポケ徹で確認↗</a>`;
-    div.onclick=()=>{modalCB&&modalCB(en);cm()};
+    div.onclick=()=>{modalCB&&modalCB(r[2]);cm()};
     el.appendChild(div);
   });
 }
