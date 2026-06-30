@@ -12,11 +12,11 @@ function pickFromParty(pre){
       const r=getPoke(it.name)||{};
       const div=document.createElement('div');
       div.className='mitem';
-      const badge=hasBuild(it)?'<span style="color:var(--accent2);font-size:9px">● 育成済</span>':'<span style="color:var(--text3);font-size:9px">未設定→ぶっぱ</span>';
+      const badge=hasBuild(it)?'<span style="color:var(--accent);font-size:9px">● 育成済</span>':'<span style="color:var(--text-3);font-size:9px">未設定→ぶっぱ</span>';
       div.innerHTML=`<img src="${r[4]||''}" onerror="this.style.opacity=0" loading="lazy">
         <div class="mitem-info">
           <div class="mitem-name">${r[1]||it.name} ${badge}</div>
-          <div class="mitem-types" style="color:var(--text3);font-size:9px">${esc(party)}</div>
+          <div class="mitem-types" style="color:var(--text-3);font-size:9px">${esc(party)}</div>
         </div>`;
       div.onclick=()=>{ const it2=it; applyBuildToSide(ppPre,it2); closePartyPick(); };
       body.appendChild(div);

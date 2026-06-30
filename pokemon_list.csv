@@ -178,7 +178,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 177,ネイティ,エスパー,ひこう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/177.png,https://yakkun.com/sv/zukan/n177
 178,ネイティオ,エスパー,ひこう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/178.png,https://yakkun.com/sv/zukan/n178
 179,メリープ,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/179.png,https://yakkun.com/sv/zukan/n179
-180,モコシャン,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/180.png,https://yakkun.com/sv/zukan/n180
+180,モココ,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/180.png,https://yakkun.com/sv/zukan/n180
 181,デンリュウ,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/181.png,https://yakkun.com/sv/zukan/n181
 182,キレイハナ,くさ,フェアリー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/182.png,https://yakkun.com/sv/zukan/n182
 183,マリル,みず,フェアリー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/183.png,https://yakkun.com/sv/zukan/n183
@@ -281,7 +281,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 280,サーナイト,エスパー,フェアリー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/280.png,https://yakkun.com/sv/zukan/n280
 281,アメタマ,むし,みず,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/281.png,https://yakkun.com/sv/zukan/n281
 282,アメモース,むし,ひこう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/282.png,https://yakkun.com/sv/zukan/n282
-283,キノコ,くさ,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/283.png,https://yakkun.com/sv/zukan/n283
+283,アメタマ,みず,むし,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/283.png,https://yakkun.com/sv/zukan/n283
 284,キノガッサ,くさ,かくとう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/284.png,https://yakkun.com/sv/zukan/n284
 285,ナマケロ,ノーマル,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/285.png,https://yakkun.com/sv/zukan/n285
 286,ヤルキモノ,ノーマル,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/286.png,https://yakkun.com/sv/zukan/n286
@@ -303,7 +303,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 302,ヤミラミ,あく,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/302.png,https://yakkun.com/sv/zukan/n302
 303,クチート,はがね,フェアリー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/303.png,https://yakkun.com/sv/zukan/n303
 304,ドッコラー,はがね,いわ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/304.png,https://yakkun.com/sv/zukan/n304
-305,ドスコイ,はがね,いわ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/305.png,https://yakkun.com/sv/zukan/n305
+305,コドラ,はがね,いわ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/305.png,https://yakkun.com/sv/zukan/n305
 306,ボスゴドラ,はがね,いわ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/306.png,https://yakkun.com/sv/zukan/n306
 307,アサナン,かくとう,エスパー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/307.png,https://yakkun.com/sv/zukan/n307
 308,チャーレム,かくとう,エスパー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/308.png,https://yakkun.com/sv/zukan/n308
@@ -404,7 +404,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 403,コリンク,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/403.png,https://yakkun.com/sv/zukan/n403
 404,ルクシオ,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/404.png,https://yakkun.com/sv/zukan/n404
 405,レントラー,でんき,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/405.png,https://yakkun.com/sv/zukan/n405
-406,ロゼイド,くさ,どく,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/406.png,https://yakkun.com/sv/zukan/n406
+406,スボミー,くさ,どく,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/406.png,https://yakkun.com/sv/zukan/n406
 407,ブイゼル,みず,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/407.png,https://yakkun.com/sv/zukan/n407
 408,フローゼル,みず,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/408.png,https://yakkun.com/sv/zukan/n408
 409,チェリンボ,くさ,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/409.png,https://yakkun.com/sv/zukan/n409
@@ -525,7 +525,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 524,ダンゴロ,いわ,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/524.png,https://yakkun.com/sv/zukan/n524
 525,ガントル,いわ,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/525.png,https://yakkun.com/sv/zukan/n525
 526,ギガイアス,いわ,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/526.png,https://yakkun.com/sv/zukan/n526
-527,コウモリ,どく,ひこう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/527.png,https://yakkun.com/sv/zukan/n527
+527,コロモリ,エスパー,ひこう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/527.png,https://yakkun.com/sv/zukan/n527
 528,ゴルーグ,どく,ひこう,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/528.png,https://yakkun.com/sv/zukan/n528
 529,モグリュー,じめん,はがね,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/529.png,https://yakkun.com/sv/zukan/n529
 530,ドリュウズ,じめん,はがね,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/530.png,https://yakkun.com/sv/zukan/n530
@@ -594,7 +594,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 593,ブルンゲル,みず,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/593.png,https://yakkun.com/sv/zukan/n593
 594,ママンボウ,みず,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/594.png,https://yakkun.com/sv/zukan/n594
 595,デンチュラ,むし,でんき,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/595.png,https://yakkun.com/sv/zukan/n595
-596,ジュフォレスト,むし,でんき,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/596.png,https://yakkun.com/sv/zukan/n596
+596,デンチュラ,むし,でんき,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/596.png,https://yakkun.com/sv/zukan/n596
 597,テッシード,くさ,はがね,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/597.png,https://yakkun.com/sv/zukan/n597
 598,ナットレイ,くさ,はがね,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/598.png,https://yakkun.com/sv/zukan/n598
 599,ギアル,はがね,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/599.png,https://yakkun.com/sv/zukan/n599
@@ -615,7 +615,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 614,ツンベアー,こおり,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/614.png,https://yakkun.com/sv/zukan/n614
 615,フリージオ,こおり,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/615.png,https://yakkun.com/sv/zukan/n615
 616,プルリル,みず,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/616.png,https://yakkun.com/sv/zukan/n616
-617,アイスキャッスル,むし,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/617.png,https://yakkun.com/sv/zukan/n617
+617,アギルダー,むし,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/617.png,https://yakkun.com/sv/zukan/n617
 618,ドジョッチ,みず,でんき,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/618.png,https://yakkun.com/sv/zukan/n618
 619,コジョフー,かくとう,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/619.png,https://yakkun.com/sv/zukan/n619
 620,コジョンド,かくとう,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/620.png,https://yakkun.com/sv/zukan/n620
@@ -678,7 +678,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 677,ニャスパー,エスパー,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/677.png,https://yakkun.com/sv/zukan/n677
 678,ニャオニクス,エスパー,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png,https://yakkun.com/sv/zukan/n678
 679,ヒトツキ,はがね,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/679.png,https://yakkun.com/sv/zukan/n679
-680,フタチキ,はがね,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/680.png,https://yakkun.com/sv/zukan/n680
+680,ニダンギル,はがね,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/680.png,https://yakkun.com/sv/zukan/n680
 681,ギルガルド,はがね,ゴースト,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/681.png,https://yakkun.com/sv/zukan/n681
 682,シュシュプ,フェアリー,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/682.png,https://yakkun.com/sv/zukan/n682
 683,フレフワン,フェアリー,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/683.png,https://yakkun.com/sv/zukan/n683
@@ -688,8 +688,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 687,カラマネロ,あく,エスパー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/687.png,https://yakkun.com/sv/zukan/n687
 688,カメテテ,いわ,みず,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/688.png,https://yakkun.com/sv/zukan/n688
 689,ガメノデス,いわ,みず,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/689.png,https://yakkun.com/sv/zukan/n689
-690,ヒドイデ,みず,どく,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/690.png,https://yakkun.com/sv/zukan/n690
-691,ドヒドイデ,みず,どく,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/691.png,https://yakkun.com/sv/zukan/n691
+691,ドラミドロ,どく,ドラゴン,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/691.png,https://yakkun.com/sv/zukan/n691
 692,ウデッポウ,みず,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/692.png,https://yakkun.com/sv/zukan/n692
 693,ブロスター,みず,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/693.png,https://yakkun.com/sv/zukan/n693
 694,エリキテル,でんき,ノーマル,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/694.png,https://yakkun.com/sv/zukan/n694
@@ -707,7 +706,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 706,ヌメルゴン,ドラゴン,,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/706.png,https://yakkun.com/sv/zukan/n706
 707,クレッフィ,はがね,フェアリー,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/707.png,https://yakkun.com/sv/zukan/n707
 708,オーロット,ゴースト,くさ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/708.png,https://yakkun.com/sv/zukan/n708
-709,ブルガネット,ゴースト,くさ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/709.png,https://yakkun.com/sv/zukan/n709
+709,オーロット,ゴースト,くさ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/709.png,https://yakkun.com/sv/zukan/n709
 710,バケッチャ,ゴースト,くさ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/710.png,https://yakkun.com/sv/zukan/n710
 711,パンプジン,ゴースト,くさ,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/711.png,https://yakkun.com/sv/zukan/n711
 712,コリンク,こおり,はがね,,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/712.png,https://yakkun.com/sv/zukan/n712
@@ -1034,7 +1033,7 @@ no,name,type1,type2,sprite_override,sprite_url,yakkun_url
 555,ヒヒダルマ(ダルマモード),ほのお,エスパー,10016,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10016.png,https://yakkun.com/sv/zukan/n555
 641,トルネロス(れいじゅうフォルム),ひこう,,10019,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10019.png,https://yakkun.com/sv/zukan/n641
 642,ボルトロス(れいじゅうフォルム),でんき,ひこう,10021,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10021.png,https://yakkun.com/sv/zukan/n642
-645,ランドロス(れいじゅうフォルム),じめん,ひこう,10023,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10023.png,https://yakkun.com/sv/zukan/n645
+645,ランドロス(れいじゅうフォルム),じめん,ひこう,10021,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10021.png,https://yakkun.com/sv/zukan/n645
 646,キュレム(ホワイトキュレム),ドラゴン,こおり,10025,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10025.png,https://yakkun.com/sv/zukan/n646
 646,キュレム(ブラックキュレム),ドラゴン,こおり,10026,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10026.png,https://yakkun.com/sv/zukan/n646
 647,ケルディオ(かくごのすがた),みず,かくとう,10027,https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10027.png,https://yakkun.com/sv/zukan/n647

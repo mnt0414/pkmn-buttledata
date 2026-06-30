@@ -48,9 +48,13 @@ const BATTLE_FORMS={
 let ABIL_EN_JA={};
 function whenPkmnDex(){return new Promise(r=>{if(window.PKMN_DEX)return r(window.PKMN_DEX);addEventListener('pkmndex-ready',()=>r(window.PKMN_DEX),{once:true})})}
 function whenCalcReady(){return new Promise(r=>{if(CALC.ready)return r();addEventListener('calc-ready',()=>r(),{once:true})})}
+function normalizeCalcSpeciesName(name){
+  if(!name)return name;
+  return String(name).replace(/-Gmax$/i,'');
+}
 function buildSide(inp){
   const G=window.SMOGON, gen=CALC.gen, notes=[];
-  let speciesEng=CALC.dict.pokemon[inp.species], baseStats=null, typesOverride=null, abilityEng;
+  let speciesEng=CALC.dict.pokemon[inp.species]||normalizeCalcSpeciesName(inp.species)||null, baseStats=null, typesOverride=null, abilityEng;
   if(!speciesEng) return {error:'種族不明: '+inp.species};
   const mega=inp.mega&&CALC.overlay.megas[inp.mega];
   if(mega){
@@ -260,7 +264,7 @@ function fillAbilityDL(pre){
   if(mg&&CALC.overlay&&CALC.overlay.megas[mg]){
     (CALC.overlay.megas[mg].abilities||[]).forEach(a=>{if(a)jaNames.push(a);});
   }else if(window.PKMN_DEX&&CALC.dict){
-    const en=CALC.dict.pokemon[sp];
+    const en=CALC.dict.pokemon[sp]||normalizeCalcSpeciesName(sp)||null;
     if(en){
       const dexSp=window.PKMN_DEX.species.get(en);
       if(dexSp&&dexSp.abilities){
@@ -306,9 +310,10 @@ function updateCalcPokeBtn(pre){
 function stripMega(m){return m.replace(/^(メガ|ゲンシ)/,'').replace(/[XYZ]$/,'')}
 function updateFormRows(pre){
   const sp=calcState[pre].species;
+  const jaName=(BY_EN[sp]&&BY_EN[sp][1])||sp;
   const megaRow=document.getElementById(pre+'-mega-row');
   if(megaRow){
-    const opts=sp&&CALC.overlay?Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===sp):[];
+    const opts=sp&&CALC.overlay?Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===jaName):[];
     if(!opts.length){megaRow.style.display='none';megaRow.innerHTML='';calcState[pre].mega='';}
     else{megaRow.style.display='flex';megaRow.innerHTML=`<button class="btn s" data-mega="">通常</button>`+opts.map(m=>`<button class="btn" data-mega="${esc(m)}">${m}</button>`).join('');}
   }
@@ -330,7 +335,7 @@ function readField(){return {gameType:cval('cf-gametype'),weather:cval('cf-weath
   reflect:cchk('cf-reflect'),lightScreen:cchk('cf-lightscreen'),helpingHand:cchk('cf-hh'),crit:cchk('cf-crit'),halfBerry:cchk('cf-half-berry')}}
 function resCardHtml(r,mj,critR){
   if(r.error)return `<div class="cres err">${mj}: ${r.error}</div>`;
-  const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text1)';
+  const col=r.maxPct>=100?'var(--win)':r.minPct>=50?'var(--accent)':'var(--text)';
   const solidPct=Math.min(100,r.minPct);
   const bandLeft=solidPct;
   const bandWidth=Math.min(100-bandLeft,r.maxPct-r.minPct);
@@ -346,7 +351,7 @@ function resCardHtml(r,mj,critR){
   if(critR&&!critR.error){
     const cd=critR.minDmg===critR.maxDmg?`${critR.minDmg}`:`${critR.minDmg}〜${critR.maxDmg}`;
     const cp=critR.minPct===critR.maxPct?`${critR.minPct}%`:`${critR.minPct}〜${critR.maxPct}%`;
-    critHtml=`<div class="cres-row" style="margin-top:4px"><span class="cres-lbl">急所</span><span class="cres-val" style="font-size:13px">${cd}</span><span class="cres-pct" style="color:#ff7a6b">${cp}</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--text2)">${critR.koText}</span></div>`;
+    critHtml=`<div class="cres-row" style="margin-top:4px"><span class="cres-lbl">急所</span><span class="cres-val" style="font-size:13px">${cd}</span><span class="cres-pct" style="color:#ff7a6b">${cp}</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--text-2)">${critR.koText}</span></div>`;
   }
   return `<div class="cres">
     <div class="cres-head"><span class="cres-mv">${mj}</span><span class="cres-ko-badge" style="color:${col}">${r.koText}</span></div>
@@ -357,7 +362,7 @@ function resCardHtml(r,mj,critR){
       <div class="cres-tick" style="left:25%"></div><div class="cres-tick" style="left:50%"></div><div class="cres-tick" style="left:75%"></div>
     </div>
     <div class="cres-markers">${markers.map(m=>`<span class="cres-marker${m.sure?' sure':''}" style="left:${m.left}%">${m.label}</span>`).join('')}</div>
-    <div class="cres-row"><span class="cres-lbl">ダメージ</span><span class="cres-val">${dmgRange}</span><span class="cres-pct" style="color:${col}">${pctRange}</span><span style="margin-left:auto;font-size:10px;color:var(--text3)">HP ${r.defHP}</span></div>
+    <div class="cres-row"><span class="cres-lbl">ダメージ</span><span class="cres-val">${dmgRange}</span><span class="cres-pct" style="color:${col}">${pctRange}</span><span style="margin-left:auto;font-size:10px;color:var(--text-3)">HP ${r.defHP}</span></div>
     ${critHtml}
     ${r.koNote?`<div class="cres-note">${r.koNote}</div>`:''}
     ${r.notes.length?`<div class="cres-note">${r.notes.join(' / ')}</div>`:''}

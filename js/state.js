@@ -14,11 +14,11 @@ async function loadPokeCSV() {
     for (const k in BY_EN) delete BY_EN[k];
     for (const k in BY_JA) delete BY_JA[k];
     POKE_DB.forEach(r => {
-      BY_EN[r[1]] = r;
       BY_JA[r[1]] = r;
     });
 
     console.log('pokemon_list.csv loaded:', POKE_DB.length, 'entries');
+    applyEngNames();
   } catch (e) {
     console.error('pokemon_list.csv load failed:', e);
     if (errBanner) errBanner.style.display = 'block';
@@ -50,7 +50,7 @@ function parseCSVtoDB(text) {
     const spriteUrl = obj.sprite_url ||
       `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sid}.png`;
     const yakkunUrl = obj.yakkun_url || `https://yakkun.com/sv/zukan/n${no}`;
-    return [no, obj.name, obj.name, types, spriteUrl, yakkunUrl];
+    return [no, obj.name, '', types, spriteUrl, yakkunUrl];
   }).filter(Boolean);
 }
 
@@ -58,6 +58,20 @@ const TC={ノーマル:'#9FA19F',ほのお:'#E62829',みず:'#2980EF',でんき:
 
 let POKE_DB = [];
 const BY_EN={}, BY_JA={};
+
+function applyEngNames(){
+  if(!window.PKMN_DEX||!POKE_DB.length)return;
+  try{
+    const byNum={};
+    window.PKMN_DEX.species.all().forEach(sp=>{ if(sp.num>0&&!byNum[sp.num]) byNum[sp.num]=sp.name; });
+    POKE_DB.forEach(r=>{ if(byNum[r[0]]) r[2]=byNum[r[0]]; });
+    for(const k in BY_EN) delete BY_EN[k];
+    POKE_DB.forEach(r=>{ if(r[2]) BY_EN[r[2]]=r; });
+    console.log('[state] English names applied');
+    window.dispatchEvent(new Event('engnames-ready'));
+  }catch(e){ console.warn('[state] applyEngNames failed',e); }
+}
+window.addEventListener('pkmndex-ready',applyEngNames);
 function getPoke(name_en){ return BY_EN[name_en]||null; }
 function typeHtml(types){
   return (types||[]).map(t=>`<span class="tbadge" style="background:${TC[t]}22;color:${TC[t]};box-shadow:inset 0 0 0 1px ${TC[t]}55">${t}</span>`).join('');
@@ -116,7 +130,7 @@ function filterM(q){
   let matches;
   if(!q) matches=POKE_DB.slice(0,60);
   else matches=POKE_DB.filter(r=>
-    r[1].includes(q)||r[1].includes(qk)||r[2].includes(q)||r[2].includes(qk)||String(r[0]).includes(q)
+    r[1].includes(q)||r[1].includes(qk)||(r[2]&&r[2].toLowerCase().includes(q))||String(r[0]).includes(q)
   ).slice(0,50);
   if(!matches.length){el.innerHTML='<div class="mloading">見つかりません</div>';return}
   el.innerHTML='';
@@ -126,7 +140,7 @@ function filterM(q){
     div.className='mitem';
     div.innerHTML=`<img src="${url}" onerror="this.style.opacity=0" loading="lazy">
       <div class="mitem-info">
-        <div class="mitem-name">${ja} <span style="color:var(--text3);font-size:9px">No.${no} ${en}</span></div>
+        <div class="mitem-name">${ja} <span style="color:var(--text-3);font-size:9px">No.${no} ${en}</span></div>
         <div class="mitem-types">${typeHtml(types)}</div>
       </div>
       <a href="${yakkun}" target="_blank" onclick="event.stopPropagation()">ポケ徹で確認↗</a>`;

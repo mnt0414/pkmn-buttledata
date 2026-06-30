@@ -1,6 +1,19 @@
+function initTheme(){
+  const t=localStorage.getItem('theme')||'light';
+  document.body.classList.toggle('theme-dark',t==='dark');
+  const el=document.getElementById('theme-select');
+  if(el) el.value=t;
+}
+function setTheme(t){
+  localStorage.setItem('theme',t);
+  document.body.classList.toggle('theme-dark',t==='dark');
+}
+
 function loadSet(){
   const u=getGasUrl();
   document.getElementById('gas-url').value=u;
+  const el=document.getElementById('theme-select');
+  if(el) el.value=localStorage.getItem('theme')||'light';
   updateNBar();
 }
 function saveSet(){
