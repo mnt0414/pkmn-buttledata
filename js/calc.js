@@ -63,7 +63,8 @@ function buildSide(inp){
     abilityEng=(mega.abilities&&mega.abilities[0])?CALC.dict.abilities[mega.abilities[0]]:undefined;
     notes.push('メガ: '+inp.mega+(mega.new?'(新)':'')+(mega.abilities&&mega.abilities.length?'':' ※特性未確定'));
   }else if(inp.battleForm&&window.PKMN_DEX){
-    const bfs=BATTLE_FORMS[inp.species]||[];
+    const jaName=(BY_EN[inp.species]&&BY_EN[inp.species][1])||inp.species;
+    const bfs=BATTLE_FORMS[jaName]||[];
     const formInfo=bfs.find(f=>f.ja===inp.battleForm);
     if(formInfo){const dsp=window.PKMN_DEX.species.get(formInfo.dexId);if(dsp&&dsp.baseStats){baseStats={};SK.forEach(s=>baseStats[s]=dsp.baseStats[s]);}}
     if(!baseStats){const dsp=gen.species.get(G.toID(speciesEng));if(dsp&&dsp.baseStats){baseStats={};SK.forEach(s=>baseStats[s]=dsp.baseStats[s])}}
@@ -319,7 +320,7 @@ function updateFormRows(pre){
   }
   const bfRow=document.getElementById(pre+'-bf-row');
   if(bfRow){
-    const bfs=sp?(BATTLE_FORMS[sp]||[]):[];
+    const bfs=sp?(BATTLE_FORMS[jaName]||[]):[];
     if(!bfs.length){bfRow.style.display='none';bfRow.innerHTML='';calcState[pre].battleForm='';}
     else{bfRow.style.display='flex';bfRow.innerHTML=`<button class="btn s" data-bf="">通常</button>`+bfs.map(f=>`<button class="btn" data-bf="${esc(f.ja)}">${f.ja}</button>`).join('');}
   }
