@@ -428,5 +428,7 @@ async function initCalc(){
 }
 function openCalc(){
   if(!CALC.built){buildCalcUI();CALC.built=true}
+  const nat=document.getElementById('atk-nature');
+  if(CALC.ready&&nat&&!nat.options.length){populateCalcLists();recalc();}
   initCalc();
 }

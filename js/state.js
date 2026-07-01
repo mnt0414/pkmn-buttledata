@@ -96,7 +96,7 @@ let S = (()=>{try{return JSON.parse(localStorage.getItem('pb3')||'null')}catch{r
   battles:[]
 };
 function getGasUrl(){return localStorage.getItem('gas_url')||''}
-function save(){localStorage.setItem('pb3',JSON.stringify(S))}
+function save(){try{localStorage.setItem('pb3',JSON.stringify(S))}catch(e){console.warn('[state] save failed',e)}}
 function getAP(){return S.parties.find(p=>p.id===S.activeParty)||S.parties[0]}
 
 function pname(x){return x&&typeof x==='object'?x.name:x}
