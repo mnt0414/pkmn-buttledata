@@ -46,12 +46,16 @@ async function applyBuildToSide(pre,it){
 }
 
 let bmIdx=-1, bmSpecies='', bmMega='', bmBattleForm='';
+function getBmJaName(){
+  return (BY_EN[bmSpecies]&&BY_EN[bmSpecies][1])||bmSpecies;
+}
 function getBmMegas(){
   if(!CALC.overlay||!bmSpecies)return[];
-  return Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===bmSpecies);
+  const jaName=getBmJaName();
+  return Object.keys(CALC.overlay.megas).filter(m=>stripMega(m)===jaName);
 }
 function getBmBattleForms(){
-  return BATTLE_FORMS[bmSpecies]||[];
+  return BATTLE_FORMS[getBmJaName()]||[];
 }
 function fillBmAbilityDL(){
   const el=document.getElementById('dl-ability-bm'); if(!el)return;
@@ -128,7 +132,7 @@ function renderBuildForm(it){
       <label class="cf"><span class="slbl">性格</span><select id="bm-nature" class="cinput">${natureOptionsHtml(it.nature)}</select></label>
       <label class="cf"><span class="slbl">テラスタル</span><select id="bm-tera" class="cinput">${teraOptionsHtml(it.tera||'')}</select></label>
       <label class="cf"><span class="slbl">とくせい</span><datalist id="dl-ability-bm"></datalist><input list="dl-ability-bm" id="bm-ability" class="cinput" autocomplete="off" value="${esc(it.ability)}"></label>
-      <label class="cf" style="position:relative"><span class="slbl">もちもの</span><div class="item-picker"><img class="item-icon" id="bm-item-icon" style="display:none"><input list="dl-item" id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}" oninput="updateItemIcon('bm')"></div></label>
+      <label class="cf" style="position:relative"><span class="slbl">もちもの</span><div class="item-picker"><img class="item-icon" id="bm-item-icon" style="display:none"><input id="bm-item" class="cinput" autocomplete="off" value="${esc(it.item)}" oninput="openItemDD('bm')" onfocus="openItemDD('bm')" onblur="setTimeout(()=>closeItemDD('bm'),200)"><div class="item-dd" id="bm-item-dd"></div></div></label>
     </div>
     <div class="cmoves"><span class="slbl">技（最大4）</span>${[0,1,2,3].map(j=>`<input list="dl-move" id="bm-move-${j}" class="cinput" placeholder="技${j+1}" autocomplete="off" value="${esc(moves[j])}">`).join('')}</div>`;
   document.getElementById('bm-change').onclick=()=>{
@@ -158,7 +162,7 @@ function updateBmStats(){
   if(bmMega&&CALC.overlay&&CALC.overlay.megas[bmMega]){
     base=mapHK(CALC.overlay.megas[bmMega].baseStats);
   }else if(bmBattleForm&&window.PKMN_DEX){
-    const bfs=BATTLE_FORMS[bmSpecies]||[];
+    const bfs=BATTLE_FORMS[getBmJaName()]||[];
     const formInfo=bfs.find(f=>f.ja===bmBattleForm);
     if(formInfo){
       const sp=window.PKMN_DEX.species.get(formInfo.dexId);
@@ -175,6 +179,7 @@ function updateBmStats(){
   const stats=computeChampStats(base,pts,natureName);
   const nm=natModStats(natureName);
   HK.forEach((k,i)=>{ const el=document.getElementById('bm-sv-'+k); if(!el)return; el.textContent=stats[SK[i]]??'-'; el.style.color=SK[i]===nm.plus?'var(--nat-neg)':SK[i]===nm.minus?'var(--nat-pos)':''; });
+
 }
 function updateBmTot(){
   let t=0; HK.forEach(k=>t+=clampInt(cval('bm-pt-'+k),0,32));

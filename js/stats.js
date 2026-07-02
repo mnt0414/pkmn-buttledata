@@ -164,9 +164,10 @@ function renderHist(bs){
     const badgeTxt=isWin?'W':'L';
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a212b;';
+    const mNames=[...(b.myLead??[]),...(b.myBack??[])], oNames=[...(b.oppLead??[]),...(b.oppBack??[])];
     let mChips='',oChips='';
-    [...(b.myLead??[]),...(b.myBack??[])].forEach(()=>{mChips+=`<span style="width:20px;height:20px;border-radius:5px;background:var(--raised);border:1px solid var(--line);flex:none;"></span>`});
-    [...(b.oppLead??[]),...(b.oppBack??[])].forEach(()=>{oChips+=`<span style="width:20px;height:20px;border-radius:5px;background:var(--raised);border:1px solid var(--line);flex:none;"></span>`});
+    for(let i=0;i<4;i++){mChips+=`<span style="width:20px;height:20px;border-radius:5px;background:var(--raised);border:1px solid var(--line);flex:none;overflow:hidden;">${mNames[i]?spriteImg(mNames[i],20):''}</span>`}
+    for(let i=0;i<4;i++){oChips+=`<span style="width:20px;height:20px;border-radius:5px;background:var(--raised);border:1px solid var(--line);flex:none;overflow:hidden;">${oNames[i]?spriteImg(oNames[i],20):''}</span>`}
     row.innerHTML=`<span class="num" style="font-size:10px;color:var(--text-3);width:42px;flex:none;">${ds}</span>
       <span class="${badgeCls}">${badgeTxt}</span>
       <div style="display:flex;gap:2px;flex:1;min-width:0;">${mChips}</div>
