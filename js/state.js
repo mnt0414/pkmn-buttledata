@@ -96,6 +96,11 @@ let S = (()=>{try{return JSON.parse(localStorage.getItem('pb3')||'null')}catch{r
   battles:[]
 };
 function getGasUrl(){return localStorage.getItem('gas_url')||''}
+function getSyncStatus(){try{return JSON.parse(localStorage.getItem('sync_status')||'null')}catch{return null}}
+function setSyncStatus(ok,msg){
+  try{localStorage.setItem('sync_status',JSON.stringify({ok,msg,at:Date.now()}))}catch(e){console.warn('[state] setSyncStatus failed',e)}
+  if(typeof updateSyncPill==='function')updateSyncPill();
+}
 function save(){try{localStorage.setItem('pb3',JSON.stringify(S))}catch(e){console.warn('[state] save failed',e)}}
 function getAP(){return S.parties.find(p=>p.id===S.activeParty)||S.parties[0]}
 

@@ -56,7 +56,12 @@ function rpRate(id,bs,ex,total,isPair){
         </div>
         <span class="num" style="font-size:12px;color:var(--text-2);width:36px;text-align:right;">${pct}%</span>`;
     }else{
-      row.innerHTML=`<span style="font-size:11.5px;flex:1;min-width:0;">${name}</span>
+      const names=name.split('＋');
+      const jpName=names.map(n=>(getPoke(n)||{})[1]||n).join('＋');
+      row.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
+          <div style="display:flex;gap:3px;align-items:center;">${pairIcons(names,20)}</div>
+          <div style="font-size:9px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${jpName}</div>
+        </div>
         <div style="width:40%;height:6px;background:var(--line);border-radius:6px;overflow:hidden;">
           <div class="bar-fill" style="height:100%;width:${pct}%;background:var(--primary);border-radius:6px;"></div>
         </div>
@@ -79,6 +84,10 @@ function renderComboStats(bs){
   renderCross(bs);
 }
 
+function pairIcons(names,size=20){
+  return names.map(n=>`<span style="display:inline-flex;width:${size}px;height:${size}px;border-radius:5px;overflow:hidden;background:var(--raised);border:1px solid var(--line);flex:none;">${spriteImg(n,size)}</span>`).join('');
+}
+
 function cwRate(id,bs,side,top,limit){
   const stats={};
   bs.forEach(b=>{const lead=side==='my'?b.myLead:b.oppLead;if(lead.length<2)return;const k=lead.slice().sort().join('＋');if(!stats[k])stats[k]={w:0,t:0};stats[k].t++;if(b.result==='win')stats[k].w++});
@@ -88,9 +97,14 @@ function cwRate(id,bs,side,top,limit){
   sorted.forEach(item=>{
     const pct=Math.round(item.rate*100);
     const col=pct>=60?'var(--win)':pct<=40?'var(--loss)':'var(--text-2)';
+    const names=item.key.split('＋');
+    const jpName=names.map(n=>(getPoke(n)||{})[1]||n).join('＋');
     const div=document.createElement('div');
     div.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:11px;';
-    div.innerHTML=`<span style="font-size:11.5px;flex:1;min-width:0;">${item.key}</span>
+    div.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;">
+        <div style="display:flex;gap:3px;align-items:center;">${pairIcons(names,20)}</div>
+        <div style="font-size:9px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${jpName}</div>
+      </div>
       <div style="width:38%;height:6px;background:var(--line);border-radius:6px;overflow:hidden;">
         <div class="bar-fill" style="height:100%;width:${pct}%;background:${col};border-radius:6px;"></div>
       </div>
@@ -106,11 +120,15 @@ function renderCross(bs){
   const oppTop=Object.entries(oppLC).sort((a,b)=>b[1]-a[1]).slice(0,10).map(e=>e[0]);
   const el=document.getElementById('cross-c');
   if(!myTop.length||!oppTop.length){el.innerHTML='<div class="empty">データなし</div>';return}
+  const pairCell=k=>{
+    const names=k.split('＋'),jp=names.map(n=>(getPoke(n)||{})[1]||n).join('＋');
+    return `<div style="display:flex;flex-direction:column;gap:2px;align-items:center;" title="${jp}">${pairIcons(names,16)}<span style="font-size:7.5px;color:var(--text-3);white-space:nowrap;">${jp}</span></div>`;
+  };
   let html=`<table style="border-collapse:collapse;font-size:10px;"><thead><tr><th style="padding:5px 8px;color:var(--text-3);border-bottom:1px solid var(--line);">自分↓ / 相手→</th>`;
-  oppTop.forEach(ok=>html+=`<th style="padding:5px 8px;color:var(--text-3);border-bottom:1px solid var(--line);white-space:nowrap;">${ok.replace('＋','<br>')}</th>`);
+  oppTop.forEach(ok=>html+=`<th style="padding:5px 8px;color:var(--text-3);border-bottom:1px solid var(--line);white-space:nowrap;">${pairCell(ok)}</th>`);
   html+='</tr></thead><tbody>';
   myTop.forEach(mk=>{
-    html+=`<tr><th style="padding:5px 8px;color:var(--text-3);white-space:nowrap;text-align:left;">${mk.replace('＋','<br>')}</th>`;
+    html+=`<tr><th style="padding:5px 8px;color:var(--text-3);white-space:nowrap;text-align:left;">${pairCell(mk)}</th>`;
     oppTop.forEach(ok=>{
       const m=bs.filter(b=>b.myLead.slice().sort().join('＋')===mk&&b.oppLead.slice().sort().join('＋')===ok);
       if(!m.length){html+='<td style="padding:5px 8px;color:var(--text-3);text-align:center;">-</td>';return}
@@ -163,7 +181,7 @@ function renderHist(bs){
     const badgeCls=isWin?'hist-badge win':'hist-badge loss';
     const badgeTxt=isWin?'W':'L';
     const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #1a212b;';
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);';
     const mNames=[...(b.myLead??[]),...(b.myBack??[])], oNames=[...(b.oppLead??[]),...(b.oppBack??[])];
     let mChips='',oChips='';
     for(let i=0;i<4;i++){mChips+=`<span style="width:20px;height:20px;border-radius:5px;background:var(--raised);border:1px solid var(--line);flex:none;overflow:hidden;">${mNames[i]?spriteImg(mNames[i],20):''}</span>`}

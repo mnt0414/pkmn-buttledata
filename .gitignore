@@ -1,0 +1,10 @@
+# Local UI verification artifacts
+UI moc/
+*.bak
+dark_check.png
+pickrate_light.png
+ss-party*.png
+step1_light.png
+step2_dot_*.png
+step2_mobile*.png
+winrate_light.png
