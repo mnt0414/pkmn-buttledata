@@ -4,4 +4,5 @@
   migrateParties();
   renderPTabs();
   renderPartySlots();
+  updateSyncPill();
 })();

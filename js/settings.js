@@ -18,6 +18,7 @@ function loadSet(){
 }
 function saveSet(){
   const u=document.getElementById('gas-url').value.trim();
+  if(u!==getGasUrl())localStorage.removeItem('sync_status');
   u?localStorage.setItem('gas_url',u):localStorage.removeItem('gas_url');
   save();updateNBar();
 }
@@ -25,6 +26,21 @@ function updateNBar(){
   const el=document.getElementById('nbar');
   if(getGasUrl()){el.className='nbar ok';el.textContent='設定済み（自動同期）'}
   else{el.className='nbar idle';el.textContent='未設定'}
+  updateSyncPill();
+}
+function updateSyncPill(){
+  const dots=document.querySelectorAll('.sync-dot'),lbl=document.getElementById('sync-label');
+  if(!dots.length)return;
+  const url=getGasUrl();
+  let cls='sync-dot idle',txt='未設定';
+  if(url){
+    const st=getSyncStatus();
+    if(!st){cls='sync-dot idle';txt='未同期'}
+    else if(st.ok){cls='sync-dot';txt='クラウド同期済み'}
+    else{cls='sync-dot err';txt='同期エラー'}
+  }
+  dots.forEach(d=>d.className=cls);
+  if(lbl)lbl.textContent=txt;
 }
 async function testGAS(){
   const url=getGasUrl();
@@ -33,17 +49,18 @@ async function testGAS(){
   try{
     const r=await fetch(url+'?action=ping');
     const j=await r.json();
-    if(j.ok){el.className='nbar ok';el.textContent='接続成功！'}
-    else{el.className='nbar ng';el.textContent='接続失敗：'+j.error}
-  }catch(e){el.className='nbar ng';el.textContent='ネットワークエラー'}
+    if(j.ok){el.className='nbar ok';el.textContent='接続成功！';setSyncStatus(true,'ping')}
+    else{el.className='nbar ng';el.textContent='接続失敗：'+j.error;setSyncStatus(false,j.error)}
+  }catch(e){el.className='nbar ng';el.textContent='ネットワークエラー';setSyncStatus(false,'network')}
 }
 async function pushGAS(silent=false){
   const url=getGasUrl();if(!url)return;
   try{
     const r=await fetch(url,{method:'POST',body:JSON.stringify({action:'push',data:S})});
     const j=await r.json();
+    j.ok?setSyncStatus(true,'push'):setSyncStatus(false,j.error);
     if(!silent){j.ok?alert('クラウドに保存しました'):alert('失敗：'+j.error)}
-  }catch(e){if(!silent)alert('ネットワークエラー')}
+  }catch(e){setSyncStatus(false,'network');if(!silent)alert('ネットワークエラー')}
 }
 async function pullGAS(){
   const url=getGasUrl();if(!url){alert('Apps Script URLを設定してください');return}
@@ -51,9 +68,9 @@ async function pullGAS(){
   try{
     const r=await fetch(url+'?action=pull');
     const j=await r.json();
-    if(j.ok&&j.data){S=j.data;migrateParties();save();renderPTabs();renderPartySlots();renderStats();alert('取得しました')}
-    else alert('失敗：'+(j.error||'データなし'))
-  }catch(e){alert('ネットワークエラー')}
+    if(j.ok&&j.data){S=j.data;migrateParties();save();renderPTabs();renderPartySlots();renderStats();setSyncStatus(true,'pull');alert('取得しました')}
+    else{setSyncStatus(false,j.error||'データなし');alert('失敗：'+(j.error||'データなし'))}
+  }catch(e){setSyncStatus(false,'network');alert('ネットワークエラー')}
 }
 function importData(){document.getElementById('import-file').click()}
 function handleImport(e){
